@@ -5,7 +5,7 @@
 //
 // Variáveis de ambiente necessárias (configurar no painel da Vercel, nunca no código):
 //   GEMINI_API_KEY  -> chave criada em https://aistudio.google.com/apikey
-//   GEMINI_MODEL    -> opcional, padrão "gemini-2.5-flash" (rápido e barato, bom pra esse uso)
+//   GEMINI_MODEL    -> opcional, padrão "gemini-3.5-flash" (rápido e barato, bom pra esse uso)
 
 // Exemplos reais do nosso tom de voz (mesmos da base local em index.html).
 // Servem pra "ensinar" o Gemini a responder do jeito que a gente responde de verdade,
@@ -92,7 +92,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
   const prompt = montarPrompt(objecao);
 
   try {
