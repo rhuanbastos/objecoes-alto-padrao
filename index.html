@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quebra de Objeções — Alto Padrão</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#faf8f4;
+    --surface:#ffffff;
+    --surface-alt:#f4efe6;
+    --ink:#211d17;
+    --muted:#6f6659;
+    --muted-2:#8c8375;
+    --accent:#9a7431;
+    --accent-deep:#7a5a22;
+    --accent-soft:#f2e6cd;
+    --border:#e7e0d2;
+    --shadow: 0 1px 2px rgba(33,29,23,0.04), 0 8px 24px -12px rgba(33,29,23,0.15);
+    --radius: 14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  a{color:var(--accent-deep);}
+
+  @keyframes fadeSlideIn{
+    from{opacity:0; transform:translateY(8px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @keyframes popIn{
+    0%{opacity:0; transform:scale(.97) translateY(-4px);}
+    100%{opacity:1; transform:scale(1) translateY(0);}
+  }
+  .fade-in{animation:fadeSlideIn .32s cubic-bezier(.2,.7,.3,1) both;}
+
+  /* Header */
+  header.top{
+    position:sticky; top:0; z-index:20;
+    background:rgba(250,248,244,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom:1px solid var(--border);
+    padding:22px 28px 18px;
+  }
+  .header-inner{max-width:1180px; margin:0 auto;}
+  .eyebrow{
+    text-transform:uppercase; letter-spacing:.14em; font-size:11px; font-weight:600;
+    color:var(--accent-deep); margin-bottom:6px;
+  }
+  h1{
+    font-family:'Playfair Display', Georgia, serif;
+    font-weight:600; font-size:30px; margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{color:var(--muted); font-size:14.5px; margin:0 0 18px; max-width:680px; line-height:1.5;}
+
+  .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+  .search-wrap{
+    position:relative; flex:1 1 320px; min-width:260px;
+  }
+  .search-wrap input{
+    width:100%; padding:13px 44px 13px 42px; border-radius:11px;
+    border:1.5px solid var(--border); background:var(--surface);
+    font-size:15px; font-family:inherit; color:var(--ink);
+    outline:none; transition:border-color .15s, box-shadow .15s;
+  }
+  .search-wrap input:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft);}
+  .search-icon{
+    position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    color:var(--muted-2); pointer-events:none; transition:color .15s;
+  }
+  .search-wrap.has-value .search-icon{color:var(--accent-deep);}
+  .search-wrap input:focus + .search-icon{color:var(--accent-deep);}
+  .clear-btn{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    width:26px; height:26px; border-radius:50%; border:none; background:var(--surface-alt);
+    color:var(--muted); cursor:pointer; display:none; align-items:center; justify-content:center;
+    font-size:15px; line-height:1;
+  }
+  .clear-btn:hover{background:var(--accent-soft); color:var(--accent-deep);}
+  .search-wrap.has-value .clear-btn{display:flex;}
+
+  .mode-toggle{
+    display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--muted);
+    background:var(--surface); border:1px solid var(--border); padding:9px 14px; border-radius:10px;
+    cursor:pointer; user-select:none;
+  }
+  .mode-toggle input{accent-color:var(--accent); width:15px; height:15px; cursor:pointer;}
+
+  .stat-pill{
+    font-size:12.5px; color:var(--muted-2); background:var(--surface); border:1px solid var(--border);
+    padding:9px 14px; border-radius:10px; white-space:nowrap;
+  }
+  .stat-pill strong{color:var(--ink); font-weight:700;}
+
+  .hint-row{font-size:12px; color:var(--muted-2); margin-top:8px;}
+  .hint-row kbd{
+    background:var(--surface-alt); border:1px solid var(--border); border-radius:4px;
+    padding:1px 6px; font-family:inherit; font-size:11px;
+  }
+
+  .cats{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+  .cat-btn{
+    font-size:13px; font-weight:600; padding:7px 14px; border-radius:999px;
+    border:1px solid var(--border); background:var(--surface); color:var(--muted);
+    cursor:pointer; transition:all .15s;
+  }
+  .cat-btn:hover{border-color:var(--accent); transform:translateY(-1px);}
+  .cat-btn:active{transform:translateY(0);}
+  .cat-btn.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  /* Main */
+  main{max-width:1180px; margin:0 auto; padding:26px 28px 80px;}
+  .empty{text-align:center; color:var(--muted); padding:60px 20px; font-size:14.5px;}
+
+  /* Match callout */
+  .match-callout{
+    background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--accent);
+    border-radius:var(--radius); box-shadow:var(--shadow); padding:22px 24px; margin-bottom:24px;
+    animation:popIn .3s cubic-bezier(.2,.7,.3,1) both;
+  }
+  .match-callout-label{
+    display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--accent-deep); margin-bottom:12px;
+  }
+  .match-callout-label svg{flex-shrink:0;}
+
+  /* Resposta montada na hora (fallback de IA, quando não tem nada parecido na base) */
+  .ai-spinner{
+    width:13px; height:13px; border-radius:50%; border:2px solid var(--accent-soft);
+    border-top-color:var(--accent-deep); animation:spin .7s linear infinite; flex-shrink:0;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .ai-callout-error .match-callout-label{color:#a4483a;}
+  .ai-note{
+    font-size:12px; color:var(--muted-2); margin-top:14px; padding-top:12px; border-top:1px solid var(--border);
+    line-height:1.5;
+  }
+
+  .match-quote{
+    font-family:'Playfair Display', Georgia, serif; font-style:italic; font-weight:500;
+    font-size:21px; line-height:1.4; margin:0 0 14px; color:var(--ink);
+  }
+  .match-alts{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border);}
+  .match-alts-label{font-size:12px; color:var(--muted-2); width:100%; margin-bottom:2px;}
+  .alt-chip{
+    font-size:12.5px; padding:6px 12px; border-radius:999px; border:1px solid var(--border);
+    background:var(--surface-alt); color:var(--ink); cursor:pointer; transition:all .15s;
+  }
+  .alt-chip:hover{border-color:var(--accent); background:var(--accent-soft);}
+
+  .section-heading{
+    font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted-2); margin:0 0 12px;
+  }
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(340px,1fr)); gap:16px;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .card:hover{transform:translateY(-3px); box-shadow:0 4px 14px -6px rgba(33,29,23,0.22), 0 12px 28px -14px rgba(33,29,23,0.18);}
+  .card-head{padding:18px 20px 14px; cursor:pointer;}
+  .card-tag{
+    display:inline-block; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--accent-deep); background:var(--accent-soft); padding:3px 9px; border-radius:6px; margin-bottom:10px;
+  }
+  .card-quote{
+    font-family:'Playfair Display', Georgia, serif; font-style:italic; font-weight:500;
+    font-size:18px; line-height:1.4; margin:0 0 8px; color:var(--ink);
+  }
+  .card-behind{font-size:13px; color:var(--muted); line-height:1.5; margin:0;}
+  .card-toggle-row{
+    display:flex; align-items:center; justify-content:space-between; margin-top:12px;
+  }
+  .toggle-hint{font-size:12.5px; color:var(--accent-deep); font-weight:600; display:flex; align-items:center; gap:4px;}
+  .chev{transition:transform .2s;}
+  .card.open .chev{transform:rotate(180deg);}
+
+  .card-body{
+    max-height:0; overflow:hidden; transition:max-height .25s ease;
+    border-top:1px solid var(--border);
+  }
+  .card-body-inner{padding:16px 20px 20px;}
+
+  .block-label{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted-2); margin:14px 0 6px;
+  }
+  .block-label:first-child{margin-top:0;}
+
+  /* Resposta em formato de bolha de WhatsApp — é o que o SDR vai copiar e colar */
+  .whatsapp-label{
+    display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; color:#4a9c56; margin:0 0 7px;
+  }
+  .bubble-wrap{ }
+  .script-box{
+    background:#e7f8dc; border:1px solid #cdeebd; border-radius:14px; border-top-left-radius:4px;
+    padding:14px 16px; font-size:14.5px; line-height:1.6; color:#1c2b17; white-space:pre-line;
+    position:relative;
+  }
+  .technique{font-size:13.5px; color:var(--ink); font-weight:600;}
+  .tone-tip{font-size:13.5px; color:var(--muted); line-height:1.5;}
+  .source-note{font-size:11.5px; color:var(--muted-2); margin-top:14px; font-style:italic;}
+
+  .card-actions{display:flex; gap:8px; margin-top:12px;}
+  .copy-btn{
+    font-size:12.5px; font-weight:600; padding:8px 13px; border-radius:8px;
+    border:1px solid var(--border); background:#fff; color:var(--ink); cursor:pointer;
+    display:flex; align-items:center; gap:6px; transition:all .15s;
+  }
+  .copy-btn:hover{border-color:var(--accent); color:var(--accent-deep);}
+  .copy-btn.copied{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  /* Bloco "por que funciona" — colapsado por padrão, é material de treino, não a resposta em si */
+  .why-details{margin-top:16px; border-top:1px solid var(--border); padding-top:12px;}
+  .why-details summary{
+    list-style:none; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--muted-2);
+    display:flex; align-items:center; gap:5px; user-select:none;
+  }
+  .why-details summary::-webkit-details-marker{display:none;}
+  .why-details summary .why-chev{transition:transform .2s;}
+  .why-details[open] summary .why-chev{transform:rotate(90deg);}
+  .why-details summary:hover{color:var(--accent-deep);}
+  .why-body{padding-top:12px;}
+
+  /* Practice mode */
+  .practice-veil{
+    padding:16px 20px; text-align:center;
+  }
+  .reveal-btn{
+    font-size:13px; font-weight:700; padding:9px 18px; border-radius:8px;
+    background:var(--ink); color:#fff; border:none; cursor:pointer;
+  }
+
+  footer{
+    max-width:1180px; margin:0 auto; padding:0 28px 50px; color:var(--muted-2); font-size:12.5px; line-height:1.6;
+  }
+  footer a{color:var(--muted-2); text-decoration:underline;}
+
+  @media (max-width:640px){
+    header.top{padding:16px 16px 14px;}
+    main{padding:20px 16px 60px;}
+    h1{font-size:24px;}
+    .match-quote{font-size:18px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="header-inner">
+    <div class="eyebrow">Ferramenta interna · SDR &amp; Corretores</div>
+    <h1>Gerador de Respostas para Objeções</h1>
+    <p class="subtitle">Cola a objeção que o cliente mandou no WhatsApp (ou busca por palavra-chave) e a resposta pronta aparece na hora — curta, no tom certo, sem enrolação.</p>
+
+    <div class="controls">
+      <div class="search-wrap" id="searchWrap">
+        <svg class="search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search" type="text" placeholder="Cola aqui a mensagem do cliente...">
+        <button class="clear-btn" id="clearBtn" title="Limpar busca">✕</button>
+      </div>
+      <label class="mode-toggle">
+        <input type="checkbox" id="practiceMode">
+        Modo treino (esconder respostas)
+      </label>
+      <div class="stat-pill" id="statPill"><strong>15</strong> objeções documentadas</div>
+    </div>
+    <div class="hint-row">Cola a frase inteira pra achar mais rápido · atalho <kbd>/</kbd> foca a busca</div>
+
+    <div class="cats" id="cats"></div>
+  </div>
+</header>
+
+<main>
+  <div id="calloutMount"></div>
+  <div id="gridHeading" class="section-heading" style="display:none;"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none;"></div>
+</main>
+
+<footer>
+  Respostas prontas, escritas por gente daqui — não geradas na hora por IA. A busca só compara o texto colado com essa base e te mostra a mais parecida na hora. Bateu contigo diferente do que tá escrito? Ajusta e manda pro marketing incluir na base. Uso interno.
+</footer>
+
+<script>
+const DATA = [
+  {
+    cat: "Preço e Valor",
+    quote: "Achei o valor do metro quadrado muito alto.",
+    behind: "Tá comparando sem um parâmetro claro, ou testando até onde dá pra negociar.",
+    technique: "Investigar antes de argumentar + falar de valor, não de preço",
+    script: "Entendi. Você tá comparando com algum imóvel específico ou é mais a sensação de \"tá caro\" mesmo?\n\nPergunto porque esse m² carrega coisa que não aparece na conta simples: vista, padrão do acabamento, localização exata. Te separo 2-3 comparáveis reais da região agora, aí você julga com dado na mão.",
+    tone: "Curto e direto. Nunca discuta o preço em si, puxe pro valor.",
+    keywords: "preço caro metro quadrado m2 valor alto tá caro achei caro"
+  },
+  {
+    cat: "Preço e Valor",
+    quote: "Vi um imóvel parecido mais barato.",
+    behind: "Pode ser anúncio desatualizado (já vendido, condição antiga) ou um comparável real com diferenças que não aparecem de cara.",
+    technique: "Comparação ponto a ponto",
+    script: "Me manda o link? Muito anúncio por aí tá desatualizado, imóvel já vendido, condição antiga...\n\nVou comparar ponto a ponto com você: metragem, estado, localização exata. Se for igual mesmo, eu falo com toda sinceridade.",
+    tone: "Curiosidade genuína, sem parecer que tá se defendendo.",
+    keywords: "concorrência mais barato anúncio internet comparação parecido achei mais barato vi outro"
+  },
+  {
+    cat: "Preço e Valor",
+    quote: "O preço não tem flexibilidade para negociar?",
+    behind: "Pode estar testando o limite, ou já decidiu e só quer confirmar que fez um bom negócio.",
+    technique: "Ancorar em condição, não em desconto direto",
+    script: "Sempre rola conversar sobre a condição. O que pesa mais pra você: valor menor à vista ou mais flexibilidade no pagamento?\n\nMe diz isso que eu já levo uma proposta que faça sentido de verdade pro proprietário.",
+    tone: "Nunca ofereça desconto de cara. Jogue pra estrutura da negociação.",
+    keywords: "negociar desconto flexibilidade condições preço abaixar dá pra baixar tem desconto"
+  },
+  {
+    cat: "Timing e Mercado",
+    quote: "Quero esperar o mercado baixar.",
+    behind: "Medo de pagar caro e ver o valor cair depois. Falta contexto de que o alto padrão costuma andar diferente do mercado geral.",
+    technique: "Dado histórico + custo de oportunidade",
+    script: "Entendo a lógica, só que no alto padrão costuma ser o contrário: a oferta é curta e esse tipo de imóvel não fica esperando ninguém.\n\nTe mando o histórico de preço da região dos últimos anos, rapidinho. Aí você decide com dado, não só com receio.",
+    tone: "Nunca crie urgência falsa. Traga o dado e deixa o cliente concluir sozinho.",
+    keywords: "esperar mercado baixar cair preço timing retração recessão vou esperar mercado cair"
+  },
+  {
+    cat: "Timing e Mercado",
+    quote: "Vou esperar os juros caírem.",
+    behind: "Preocupação genuína com o custo total do financiamento.",
+    technique: "Separar o preço do imóvel do custo do crédito",
+    script: "Faz sentido, juro pesa mesmo. Só que, historicamente, quando o juro cai o preço do imóvel sobe, porque todo mundo corre pra comprar junto.\n\nDá pra fechar agora numa condição boa e portabilizar depois. Quer que eu simule os dois cenários pra você comparar?",
+    tone: "Raciocínio financeiro, com número. Sem pressão emocional.",
+    keywords: "juros financiamento esperar taxa selic cair vou esperar o juro baixar"
+  },
+  {
+    cat: "Timing e Mercado",
+    quote: "Ainda não é o momento certo para mim.",
+    behind: "Pode ser timing pessoal genuíno, ou um jeito educado de não avançar sem dizer o motivo real.",
+    technique: "Investigar a objeção real por trás da resposta genérica",
+    script: "Sem problema, decisão grande merece tempo. Só pra eu não te encher no momento errado: é timing mesmo, outro investimento rolando, ou ficou alguma dúvida que eu resolvo agora?",
+    tone: "Pergunta aberta, sem insistir. O objetivo é descobrir se é objeção real.",
+    keywords: "momento certo não é hora agora depois pensar não é a hora ainda vou pensar"
+  },
+  {
+    cat: "Terceiros e Decisão",
+    quote: "Vou conversar com meu advogado primeiro.",
+    behind: "Legítimo e esperado em compra de alto valor. Também pode ser um jeito educado de ganhar tempo.",
+    technique: "Acolher e facilitar, nunca resistir",
+    script: "Isso é o certo a se fazer, numa compra desse tamanho eu recomendo mesmo. Te mando agora a matrícula e toda a documentação, e fico à mão pro seu advogado se ele tiver alguma dúvida técnica.\n\nIsso agiliza bastante. Consigo te mandar tudo ainda hoje?",
+    tone: "Postura profissional, nunca defensiva. Documentação rápida reforça confiança.",
+    keywords: "advogado documentação jurídico due diligence contrato falar conversar vou falar com meu advogado"
+  },
+  {
+    cat: "Terceiros e Decisão",
+    quote: "Preciso alinhar com meu cônjuge/sócio.",
+    behind: "Decisão compartilhada é comum e legítima nesse padrão de compra, raramente é desculpa.",
+    technique: "Virar aliado da decisão em conjunto",
+    script: "Com certeza, decisão desse tamanho é pra ser tomada junto mesmo. Te preparo um material completo: fotos, vídeo, planta, valores, pra vocês olharem com calma.\n\nSe fizer sentido, marco uma call ou visita com os dois juntos, aí eu tiro as dúvidas na hora.",
+    tone: "Reforce que apoiar essa conversa é parte do seu trabalho, não um obstáculo.",
+    keywords: "cônjuge esposa marido sócio conversar alinhar parceiro falar mulher vou falar com minha esposa vou falar com meu marido"
+  },
+  {
+    cat: "Terceiros e Decisão",
+    quote: "Meu family office/contador vai analisar.",
+    behind: "Público de alto padrão costuma estruturar compra via holding ou consultor financeiro. É sinal de seriedade, não recusa.",
+    technique: "Dar o dado no formato técnico certo",
+    script: "Boa, isso mostra que o processo do seu lado tá bem estruturado, eu gosto assim. Te monto um dossiê com rentabilidade, comparativos e todos os custos (IPTU, condomínio, taxas).\n\nTem algum formato específico que eles costumam pedir?",
+    tone: "Fale a língua financeira: número, projeção, estrutura.",
+    keywords: "family office contador consultor financeiro holding análise assessor falar conversar vou falar com meu contador"
+  },
+  {
+    cat: "Custos e Condições",
+    quote: "O condomínio está muito caro.",
+    behind: "Preocupação com o custo mensal recorrente, não só com o valor de compra.",
+    technique: "Traduzir custo em benefício tangível",
+    script: "Entendo, pesa no bolso todo mês mesmo. Ali dentro tá incluso segurança 24h, concierge, manutenção da área de lazer, coisa que numa casa você pagaria à parte e sairia mais caro ainda.\n\nTe mando o rateio detalhado pra você ver onde cada real vai.",
+    tone: "Transparência com o rateio, sem minimizar a preocupação com o orçamento.",
+    keywords: "condomínio caro taxa mensal rateio manutenção condomínio tá caro"
+  },
+  {
+    cat: "Custos e Condições",
+    quote: "Não quero pagar comissão de corretagem.",
+    behind: "Pode não saber que a comissão em geral é paga pelo vendedor/incorporadora, ou está tentando negociar redução.",
+    technique: "Esclarecer quem paga + reforçar o valor do serviço",
+    script: "Boa notícia: na maioria dos casos quem paga é o proprietário ou a incorporadora, não você. Meu trabalho de te acompanhar até o fim não tem custo extra pro seu lado.\n\n(Se for diferente aqui) o valor cobre toda a checagem de documentação e a negociação em seu nome, coisa que sozinho tomaria muito mais tempo e risco.",
+    tone: "Clareza objetiva sobre quem paga o quê, sem soar defensivo.",
+    keywords: "comissão corretagem taxa honorários pagar não quero pagar comissão"
+  },
+  {
+    cat: "Custos e Condições",
+    quote: "As condições de pagamento não me atendem.",
+    behind: "Pode ser fluxo de caixa, outro investimento em andamento, ou teste de flexibilidade.",
+    technique: "Explorar alternativas antes de assumir impossibilidade",
+    script: "Beleza, vamos ver o que dá pra ajustar. Já usamos entrada menor com parcelamento direto, sinal mais saldo na entrega das chaves, até permuta de outro ativo.\n\nO que pesa mais pra você agora: prazo ou valor de entrada?",
+    tone: "Postura consultiva, buscando a solução junto com o cliente.",
+    keywords: "pagamento entrada parcelamento condições financiamento sinal não consigo pagar assim"
+  },
+  {
+    cat: "Concorrência e Confiança",
+    quote: "Já tenho um corretor/amigo que está me atendendo.",
+    behind: "Relação de confiança pré-existente. Concorrência por atenção, não por informação.",
+    technique: "Reforçar sem desqualificar o outro profissional",
+    script: "Que bom que você já tem alguém de confiança, isso importa numa decisão dessas. Posso só te mandar as opções que tenho por aqui, sem compromisso nenhum.\n\nÀs vezes uma segunda visão só reforça a decisão que você já vai tomar.",
+    tone: "Nunca critique o outro corretor. Postura colaborativa, não de pressão.",
+    keywords: "corretor amigo concorrência outro atendimento imobiliária já tenho corretor tenho um amigo"
+  },
+  {
+    cat: "Concorrência e Confiança",
+    quote: "Vou pesquisar mais opções antes de decidir.",
+    behind: "Comportamento natural em compra de alto valor, não é recusa.",
+    technique: "Apoiar a pesquisa e virar referência",
+    script: "Faz sentido pesquisar bem, eu inclusive recomendo. Te mando um comparativo com as principais opções disponíveis hoje, prós e contras de cada uma, pra você ganhar tempo.\n\nAssim, quando for decidir, você já parte com visão completa do mercado.",
+    tone: "Seja o curador de informação, não o vendedor ansioso.",
+    keywords: "pesquisar outras opções mercado comparar decidir depois vou pesquisar mais estudando o mercado só de olho analisando"
+  },
+  {
+    cat: "Concorrência e Confiança",
+    quote: "Não conheço a imobiliária/corretor, quero mais garantias.",
+    behind: "Falta de prova social ou histórico. Natural em quem valoriza discrição e reputação acima de tudo.",
+    technique: "Prova social + transparência de processo",
+    script: "Entendo, ainda mais nesse mercado onde discrição e confiança valem tudo. Te mostro nosso histórico de transações no seu perfil de imóvel e referências de outros clientes, com autorização deles.\n\nTambém topo uma call mais aprofundada antes de qualquer coisa, sem compromisso.",
+    tone: "Nunca se justifique demais, apresente credencial com naturalidade.",
+    keywords: "confiança garantias não conhece referências reputação não conheço vocês"
+  }
+];
+
+/* ---------- Motor de busca local (sem IA — apenas comparação de texto) ---------- */
+
+const STOPWORDS = new Set(["a","o","as","os","um","uma","uns","umas","de","da","do","das","dos","em","no","na","nos","nas",
+  "por","pra","para","com","sem","e","ou","mas","que","se","nao","não","e","eh","é","ser","estar","esta","está","isso",
+  "essa","esse","essas","esses","isto","aqui","ali","la","lá","muito","mais","menos","tao","tão","meu","minha","meus",
+  "minhas","seu","sua","seus","suas","eu","voce","você","ele","ela","eles","elas","nós","nos","vou","vai","vamos","tem",
+  "ter","tinha","foi","fica","ficou","cliente","disse","falou","comentou","falando","dizendo","perguntou","questionou",
+  "coisa","tipo","ai","aí","ja","já","ainda","bem","so","só","acho","achou","achei","gente","aquela","aquele","desse",
+  "dessa","deste","desta","sobre","depois","antes","quero","quer","queria","quis","quis","gostaria","posso","pode",
+  "podia","preciso","precisa","precisava","tá","ta","tô","to"]);
+
+function normalize(s){
+  return (s || "")
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9\s]/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+function tokenize(s){
+  return normalize(s).split(' ').filter(t => t.length > 1 && !STOPWORDS.has(t));
+}
+function buildWeights(item){
+  const w = {};
+  function add(text, weight){
+    tokenize(text).forEach(t => { w[t] = (w[t] || 0) + weight; });
+  }
+  add(item.quote, 3);
+  add(item.keywords, 3);
+  add(item.cat, 1);
+  add(item.technique, 1);
+  add(item.script, 0.5);
+  // limita o peso de uma única palavra: uma palavra genérica que aparece em vários campos do
+  // mesmo item (citação + palavras-chave, por exemplo) não pode sozinha disparar um "match forte"
+  Object.keys(w).forEach(t => { w[t] = Math.min(w[t], 3); });
+  return w;
+}
+DATA.forEach(item => {
+  item._weights = buildWeights(item);
+  item._normQuote = normalize(item.quote);
+});
+
+function scoreItem(queryTokens, queryNorm, item){
+  let score = 0;
+  queryTokens.forEach(qt => {
+    if(item._weights[qt]){ score += item._weights[qt]; return; }
+    let partial = 0;
+    for(const key in item._weights){
+      if(qt.length >= 4 && (key.includes(qt) || qt.includes(key))){
+        partial = Math.max(partial, item._weights[key] * 0.5);
+      }
+    }
+    score += partial;
+  });
+  if(queryNorm.length >= 6 && item._normQuote.includes(queryNorm)) score += 10;
+  return score;
+}
+
+/* ---------- Estado e render ---------- */
+
+const grid = document.getElementById('grid');
+const empty = document.getElementById('empty');
+const calloutMount = document.getElementById('calloutMount');
+const gridHeading = document.getElementById('gridHeading');
+const catsWrap = document.getElementById('cats');
+const searchInput = document.getElementById('search');
+const searchWrap = document.getElementById('searchWrap');
+const clearBtn = document.getElementById('clearBtn');
+const practiceToggle = document.getElementById('practiceMode');
+const statPill = document.getElementById('statPill');
+
+const categories = ["Todas", ...Array.from(new Set(DATA.map(d => d.cat)))];
+let activeCat = "Todas";
+let query = "";
+let practiceMode = false;
+
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+function renderCats(){
+  catsWrap.innerHTML = "";
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (cat === activeCat ? ' active' : '');
+    btn.textContent = cat;
+    btn.addEventListener('click', () => {
+      activeCat = cat;
+      // clicar numa categoria é "navegar", não "refinar busca" — limpa a busca pra não some resultado por engano
+      query = "";
+      searchInput.value = "";
+      searchWrap.classList.remove('has-value');
+      renderCats();
+      renderAll();
+    });
+    catsWrap.appendChild(btn);
+  });
+}
+
+function scriptDetailHtml(item, extraClass){
+  return `
+    <div class="whatsapp-label">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.4c1.4.8 3.1 1.2 5 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+      Pronto pra colar no WhatsApp
+    </div>
+    <div class="script-box">${escapeHtml(item.script)}</div>
+
+    <div class="card-actions">
+      <button class="copy-btn" data-copy>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar resposta
+      </button>
+    </div>
+
+    <details class="why-details">
+      <summary>
+        <svg class="why-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+        Por que essa resposta funciona
+      </summary>
+      <div class="why-body">
+        <div class="block-label" style="margin-top:0;">O que costuma estar por trás</div>
+        <div class="tone-tip">${escapeHtml(item.behind)}</div>
+
+        <div class="block-label">Técnica</div>
+        <div class="technique">${escapeHtml(item.technique)}</div>
+
+        <div class="block-label">Dica de tom</div>
+        <div class="tone-tip">${escapeHtml(item.tone)}</div>
+      </div>
+    </details>
+  `;
+}
+
+function wireCopy(container, item){
+  const btn = container.querySelector('[data-copy]');
+  if(!btn) return;
+  btn.addEventListener('click', () => {
+    const text = `Objeção: ${item.quote}\n\nResposta sugerida:\n${item.script}`;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.classList.add('copied');
+      btn.innerHTML = 'Copiado ✓';
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar resposta';
+      }, 1600);
+    });
+  });
+}
+
+function renderCallout(topItem, alts){
+  const container = document.createElement('div');
+  container.className = 'match-callout';
+
+  const bodyId = 'callout-body';
+  const showVeil = practiceMode;
+
+  container.innerHTML = `
+    <div class="match-callout-label">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2L12 16.4 5.7 21l2.3-7.2-6-4.6h7.6z"/></svg>
+      Resposta encontrada na base
+    </div>
+    <p class="match-quote">"${escapeHtml(topItem.quote)}"</p>
+    <div id="${bodyId}"></div>
+  `;
+
+  const bodyMount = container.querySelector('#' + bodyId);
+  if(showVeil){
+    bodyMount.innerHTML = `<div class="practice-veil" style="padding:4px 0 0;"><button class="reveal-btn" data-reveal>Revelar resposta</button></div>`;
+    bodyMount.querySelector('[data-reveal]').addEventListener('click', () => {
+      bodyMount.innerHTML = scriptDetailHtml(topItem);
+      wireCopy(bodyMount, topItem);
+    });
+  } else {
+    bodyMount.innerHTML = scriptDetailHtml(topItem);
+    wireCopy(bodyMount, topItem);
+  }
+
+  if(alts.length){
+    const altsWrap = document.createElement('div');
+    altsWrap.className = 'match-alts';
+    altsWrap.innerHTML = `<div class="match-alts-label">Não é essa? outras objeções parecidas:</div>`;
+    alts.forEach(altItem => {
+      const chip = document.createElement('button');
+      chip.className = 'alt-chip';
+      chip.textContent = altItem.quote;
+      chip.addEventListener('click', () => {
+        renderAll(altItem);
+      });
+      altsWrap.appendChild(chip);
+    });
+    container.appendChild(altsWrap);
+  }
+
+  container.querySelector('.match-quote').classList.add('fade-in');
+  return container;
+}
+
+function renderCard(item, idx){
+  const card = document.createElement('div');
+  card.className = 'card fade-in';
+  card.style.animationDelay = (idx * 25) + 'ms';
+
+  card.innerHTML = `
+    <div class="card-head" data-toggle>
+      <span class="card-tag">${escapeHtml(item.cat)}</span>
+      <p class="card-quote">"${escapeHtml(item.quote)}"</p>
+      <div class="card-toggle-row">
+        <span></span>
+        <span class="toggle-hint">Ver resposta
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </div>
+    </div>
+    <div class="card-body"><div class="card-body-mount"></div></div>
+  `;
+
+  const bodyMount = card.querySelector('.card-body-mount');
+  const bodyEl = card.querySelector('.card-body');
+  let revealed = !practiceMode;
+
+  function paintBody(){
+    if(revealed){
+      bodyMount.innerHTML = `<div class="card-body-inner">${scriptDetailHtml(item)}</div>`;
+      wireCopy(bodyMount, item);
+      bodyMount.querySelectorAll('details').forEach(det => {
+        det.addEventListener('toggle', () => {
+          if(card.classList.contains('open')) setOpen(true);
+        });
+      });
+    } else {
+      bodyMount.innerHTML = `<div class="card-body-inner"><div class="practice-veil"><button class="reveal-btn" data-reveal>Revelar resposta</button></div></div>`;
+      bodyMount.querySelector('[data-reveal]').addEventListener('click', () => {
+        revealed = true;
+        paintBody();
+        setOpen(true);
+      });
+    }
+  }
+  paintBody();
+
+  function setOpen(open){
+    if(open){
+      card.classList.add('open');
+      bodyEl.style.maxHeight = bodyEl.scrollHeight + 'px';
+    } else {
+      card.classList.remove('open');
+      bodyEl.style.maxHeight = '0px';
+    }
+  }
+
+  card.querySelector('[data-toggle]').addEventListener('click', () => {
+    setOpen(!card.classList.contains('open'));
+  });
+
+  return card;
+}
+
+const AI_ENDPOINT = 'api/responder';
+let searchToken = 0;
+let debounceTimer = null;
+
+function renderAll(forceTopItem){
+  const myToken = ++searchToken;
+  if(debounceTimer){ clearTimeout(debounceTimer); debounceTimer = null; }
+
+  const catFiltered = DATA.filter(d => activeCat === "Todas" || d.cat === activeCat);
+  const q = query.trim();
+  const qNorm = normalize(q);
+  const qTokens = tokenize(q);
+
+  calloutMount.innerHTML = "";
+  gridHeading.style.display = 'none';
+  grid.innerHTML = "";
+
+  let listToRender = catFiltered;
+  let total = catFiltered.length;
+  let strongMatchFound = false;
+
+  if(forceTopItem || (q && qTokens.length >= 2)){
+    // modo "colar objeção": mostra a melhor resposta em destaque
+    let scored = catFiltered
+      .map(item => ({ item, score: forceTopItem ? (item === forceTopItem ? 999 : scoreItem(qTokens, qNorm, item)) : scoreItem(qTokens, qNorm, item) }))
+      .sort((a, b) => b.score - a.score);
+
+    const top = forceTopItem ? { item: forceTopItem, score: 999 } : scored[0];
+    const strongMatch = forceTopItem || (top && top.score >= 5);
+
+    if(strongMatch){
+      strongMatchFound = true;
+      const alts = scored.filter(s => s.item !== top.item && s.score > 0).slice(0, 3).map(s => s.item);
+      calloutMount.appendChild(renderCallout(top.item, alts));
+      listToRender = catFiltered.filter(d => d !== top.item);
+      total = listToRender.length;
+      if(listToRender.length){
+        gridHeading.style.display = 'block';
+        gridHeading.textContent = 'Outras objeções relacionadas';
+      }
+    } else if(q){
+      // busca simples por palavra-chave (query curta ou sem match forte)
+      listToRender = catFiltered.filter(d => scoreItem(qTokens, qNorm, d) > 0 || d.quote.toLowerCase().includes(q.toLowerCase()));
+      total = listToRender.length;
+    }
+  } else if(q){
+    listToRender = catFiltered.filter(d => scoreItem(qTokens, qNorm, d) > 0 || d.quote.toLowerCase().includes(q.toLowerCase()));
+    total = listToRender.length;
+  }
+
+  statPill.innerHTML = `<strong>${total}</strong> de ${DATA.length} objeções`;
+
+  // Nada forte achado na base, mas parece uma frase de verdade (não só 1-2 palavras soltas)?
+  // Tenta montar uma resposta na hora, pra nunca deixar o SDR sem nada.
+  const looksLikeSentence = qTokens.length >= 3;
+  if(!strongMatchFound && !forceTopItem && q && looksLikeSentence){
+    calloutMount.appendChild(renderLoadingCallout());
+    debounceTimer = setTimeout(() => { tryAIFallback(q, myToken); }, 550);
+  }
+
+  if(listToRender.length === 0 && !calloutMount.innerHTML){
+    empty.style.display = 'block';
+    empty.textContent = 'Nenhuma objeção encontrada. Tente descrever a situação com outras palavras.';
+    return;
+  }
+  empty.style.display = 'none';
+
+  listToRender.forEach((item, idx) => grid.appendChild(renderCard(item, idx)));
+}
+
+function renderLoadingCallout(){
+  const el = document.createElement('div');
+  el.className = 'match-callout ai-callout fade-in';
+  el.id = 'aiCallout';
+  el.innerHTML = `
+    <div class="match-callout-label">
+      <span class="ai-spinner"></span>
+      Montando uma resposta pra essa...
+    </div>
+  `;
+  return el;
+}
+
+function renderAICallout(objecaoText, respostaTexto){
+  const el = document.createElement('div');
+  el.className = 'match-callout ai-callout fade-in';
+  el.id = 'aiCallout';
+  el.innerHTML = `
+    <div class="match-callout-label">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+      Resposta montada agora pra você
+    </div>
+    <p class="match-quote">"${escapeHtml(objecaoText)}"</p>
+    <div id="aiBody"></div>
+    <div class="ai-note">Essa não veio pronta da base — foi montada na hora pra essa situação específica. Se ficar boa, vale mandar pro marketing incluir como padrão.</div>
+  `;
+  const aiItem = { quote: objecaoText, script: respostaTexto };
+  const aiBody = el.querySelector('#aiBody');
+  aiBody.innerHTML = `
+    <div class="whatsapp-label">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.4c1.4.8 3.1 1.2 5 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+      Pronto pra colar no WhatsApp
+    </div>
+    <div class="script-box">${escapeHtml(respostaTexto)}</div>
+    <div class="card-actions">
+      <button class="copy-btn" data-copy>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar resposta
+      </button>
+    </div>
+  `;
+  wireCopy(aiBody, aiItem);
+  return el;
+}
+
+function renderAIErrorCallout(message){
+  const el = document.createElement('div');
+  el.className = 'match-callout ai-callout ai-callout-error fade-in';
+  el.id = 'aiCallout';
+  el.innerHTML = `
+    <div class="match-callout-label">Não consegui montar uma resposta agora</div>
+    <div class="tone-tip">${escapeHtml(message)}</div>
+  `;
+  return el;
+}
+
+async function tryAIFallback(objecaoText, myToken){
+  const NOT_CONFIGURED_MSG = 'A geração por IA ainda não foi publicada com a chave de API nesta versão — isso é esperado até o time técnico finalizar o deploy. Por enquanto, tenta buscar com outras palavras que já estão na base.';
+  try {
+    const r = await fetch(AI_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ objecao: objecaoText })
+    });
+    if(myToken !== searchToken) return; // usuário já mudou a busca, descarta essa resposta
+
+    if(!r.ok){
+      const existing = document.getElementById('aiCallout');
+      if(existing) existing.replaceWith(renderAIErrorCallout(NOT_CONFIGURED_MSG));
+      return;
+    }
+    const data = await r.json();
+    if(myToken !== searchToken) return;
+
+    if(!data || !data.resposta){
+      const existing = document.getElementById('aiCallout');
+      if(existing) existing.replaceWith(renderAIErrorCallout('Não veio uma resposta dessa vez. Tenta reformular a frase ou busca de novo.'));
+      return;
+    }
+    const existing = document.getElementById('aiCallout');
+    if(existing) existing.replaceWith(renderAICallout(objecaoText, data.resposta));
+  } catch(err){
+    if(myToken !== searchToken) return;
+    const existing = document.getElementById('aiCallout');
+    if(existing) existing.replaceWith(renderAIErrorCallout(NOT_CONFIGURED_MSG));
+  }
+}
+
+searchInput.addEventListener('input', (e) => {
+  query = e.target.value;
+  searchWrap.classList.toggle('has-value', query.length > 0);
+  // digitar uma busca sempre olha a base inteira, mesmo se uma categoria tiver ficado marcada de antes
+  if(query.length > 0 && activeCat !== "Todas"){
+    activeCat = "Todas";
+    renderCats();
+  }
+  renderAll();
+});
+clearBtn.addEventListener('click', () => {
+  query = "";
+  searchInput.value = "";
+  searchWrap.classList.remove('has-value');
+  searchInput.focus();
+  renderAll();
+});
+practiceToggle.addEventListener('change', (e) => { practiceMode = e.target.checked; renderAll(); });
+
+document.addEventListener('keydown', (e) => {
+  if(e.key === '/' && document.activeElement !== searchInput){
+    e.preventDefault();
+    searchInput.focus();
+  }
+});
+
+renderCats();
+renderAll();
+</script>
+
+</body>
+</html>
