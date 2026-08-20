@@ -56,22 +56,30 @@
     background:linear-gradient(165deg, var(--navy) 0%, var(--navy-deep) 100%);
     padding:24px 28px 22px;
     box-shadow:0 4px 20px -8px rgba(8,42,52,0.35);
+    transition:padding .25s ease;
   }
   .header-inner{max-width:1180px; margin:0 auto;}
 
-  .brand-row{display:flex; align-items:center; margin-bottom:26px;}
-  .brand-logo{height:34px; width:auto; display:block;}
+  .brand-row{display:flex; align-items:center; margin-bottom:26px; transition:margin-bottom .25s ease;}
+  .brand-logo{height:34px; width:auto; display:block; transition:height .25s ease;}
 
   .eyebrow{
     text-transform:uppercase; letter-spacing:.16em; font-size:11px; font-weight:600;
     color:var(--orange); margin-bottom:8px;
+    max-height:40px; opacity:1; overflow:hidden;
+    transition:max-height .25s ease, opacity .2s ease, margin-bottom .25s ease;
   }
   h1{
     font-family:'Montserrat', sans-serif;
     font-weight:300; font-size:32px; margin:0 0 8px; color:#fff;
     letter-spacing:-0.01em;
+    transition:font-size .25s ease;
   }
-  .subtitle{color:rgba(255,255,255,0.68); font-size:14.5px; margin:0 0 18px; max-width:680px; line-height:1.6; font-weight:300;}
+  .subtitle{
+    color:rgba(255,255,255,0.68); font-size:14.5px; margin:0 0 18px; max-width:680px; line-height:1.6; font-weight:300;
+    max-height:120px; opacity:1; overflow:hidden;
+    transition:max-height .25s ease, opacity .2s ease, margin-bottom .25s ease;
+  }
 
   .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
   .search-wrap{
@@ -112,13 +120,21 @@
   }
   .stat-pill strong{color:#fff; font-weight:600;}
 
-  .hint-row{font-size:12px; color:rgba(255,255,255,0.5); margin-top:9px;}
+  .hint-row{
+    font-size:12px; color:rgba(255,255,255,0.5); margin-top:9px;
+    max-height:30px; opacity:1; overflow:hidden;
+    transition:max-height .25s ease, opacity .2s ease, margin-top .25s ease;
+  }
   .hint-row kbd{
     background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:4px;
     padding:1px 6px; font-family:inherit; font-size:11px; color:#fff;
   }
 
-  .cats{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;}
+  .cats{
+    display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;
+    max-height:260px; opacity:1; overflow:hidden;
+    transition:max-height .3s ease, opacity .2s ease, margin-top .25s ease;
+  }
   .cat-btn{
     font-size:13px; font-weight:600; padding:7px 14px; border-radius:999px;
     border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.8);
@@ -260,8 +276,19 @@
   }
   footer a{color:var(--muted-2); text-decoration:underline;}
 
+  /* Cabeçalho compacto: ativado via JS assim que a página rola, pra não virar
+     um bloco preto grande cobrindo o conteúdo, principalmente no celular. */
+  header.top.compact{padding-top:12px; padding-bottom:12px;}
+  header.top.compact .brand-row{margin-bottom:8px;}
+  header.top.compact .brand-logo{height:22px;}
+  header.top.compact .eyebrow{max-height:0; opacity:0; margin-bottom:0;}
+  header.top.compact h1{font-size:19px;}
+  header.top.compact .subtitle{max-height:0; opacity:0; margin-bottom:0;}
+  header.top.compact .hint-row{max-height:0; opacity:0; margin-top:0;}
+  header.top.compact .cats{max-height:0; opacity:0; margin-top:0;}
+
   @media (max-width:640px){
-    header.top{position:static; padding:16px 16px 14px;}
+    header.top{padding:16px 16px 14px;}
     main{padding:20px 16px 60px;}
     h1{font-size:24px;}
     .match-quote{font-size:18px;}
@@ -529,10 +556,12 @@ function buildWeights(item){
   Object.keys(w).forEach(t => { w[t] = Math.min(w[t], 3); });
   return w;
 }
-DATA.forEach(item => {
+function prepareItem(item){
   item._weights = buildWeights(item);
   item._normQuote = normalize(item.quote);
-});
+  return item;
+}
+DATA.forEach(prepareItem);
 
 function scoreItem(queryTokens, queryNorm, item){
   let score = 0;
@@ -550,6 +579,20 @@ function scoreItem(queryTokens, queryNorm, item){
   return score;
 }
 
+/* ---------- Cabeçalho compacto ao rolar ---------- */
+(function(){
+  const headerEl = document.querySelector('header.top');
+  if(!headerEl) return;
+  let ticking = false;
+  function updateCompact(){
+    headerEl.classList.toggle('compact', window.scrollY > 24);
+    ticking = false;
+  }
+  window.addEventListener('scroll', function(){
+    if(!ticking){ requestAnimationFrame(updateCompact); ticking = true; }
+  }, { passive:true });
+})();
+
 /* ---------- Estado e render ---------- */
 
 const grid = document.getElementById('grid');
@@ -563,7 +606,10 @@ const clearBtn = document.getElementById('clearBtn');
 const practiceToggle = document.getElementById('practiceMode');
 const statPill = document.getElementById('statPill');
 
-const categories = ["Todas", ...Array.from(new Set(DATA.map(d => d.cat)))];
+function computeCategories(){
+  return ["Todas", ...Array.from(new Set(DATA.map(d => d.cat)))];
+}
+let categories = computeCategories();
 let activeCat = "Todas";
 let query = "";
 let practiceMode = false;
@@ -750,6 +796,8 @@ function renderCard(item, idx){
 }
 
 const AI_ENDPOINT = 'api/responder';
+const ADD_ENDPOINT = 'api/add-objecao';
+const LIST_ENDPOINT = 'api/list-objecoes';
 let searchToken = 0;
 let debounceTimer = null;
 
@@ -836,6 +884,48 @@ function renderLoadingCallout(){
   return el;
 }
 
+const NOVA_CATEGORIA_IA = "Sugeridas pela IA";
+
+function addObjecaoToLocalData(entry){
+  // Atualização otimista: já entra na lista local (contador, busca, categoria)
+  // sem esperar recarregar a página.
+  DATA.push(prepareItem({
+    cat: entry.categoria || NOVA_CATEGORIA_IA,
+    quote: entry.pergunta,
+    behind: "Objeção real trazida por um SDR e resolvida pela IA em tempo real.",
+    technique: "Sugerida pela IA",
+    script: entry.resposta,
+    tone: "Gerada automaticamente e ainda não revisada pelo marketing. Se achar que pode melhorar, avisa a equipe.",
+    keywords: entry.pergunta
+  }));
+  categories = computeCategories();
+  renderCats();
+  renderAll();
+}
+
+async function salvarObjecaoNaBase(objecaoText, respostaTexto, btn){
+  btn.disabled = true;
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = 'Salvando...';
+  try{
+    const r = await fetch(ADD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categoria: NOVA_CATEGORIA_IA, pergunta: objecaoText, resposta: respostaTexto })
+    });
+    const dados = await r.json().catch(() => ({}));
+    if(!r.ok){
+      throw new Error(dados && dados.error || 'Falha ao salvar.');
+    }
+    btn.innerHTML = 'Adicionado à base ✓';
+    addObjecaoToLocalData({ categoria: NOVA_CATEGORIA_IA, pergunta: objecaoText, resposta: respostaTexto });
+  } catch(err){
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+    alert('Não consegui salvar essa resposta na base agora. Tenta de novo em instantes.');
+  }
+}
+
 function renderAICallout(objecaoText, respostaTexto){
   const el = document.createElement('div');
   el.className = 'match-callout ai-callout fade-in';
@@ -847,7 +937,7 @@ function renderAICallout(objecaoText, respostaTexto){
     </div>
     <p class="match-quote">"${escapeHtml(objecaoText)}"</p>
     <div id="aiBody"></div>
-    <div class="ai-note">Essa não veio pronta da base, foi montada na hora pra essa situação específica. Se ficar boa, vale mandar pro marketing incluir como padrão.</div>
+    <div class="ai-note">Essa não veio pronta da base, foi montada na hora pra essa situação específica. Se ficar boa, clica em "Adicionar à base" pra ela virar padrão pro time inteiro, sem precisar da IA de novo.</div>
   `;
   const aiItem = { quote: objecaoText, script: respostaTexto };
   const aiBody = el.querySelector('#aiBody');
@@ -862,9 +952,15 @@ function renderAICallout(objecaoText, respostaTexto){
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copiar resposta
       </button>
+      <button class="copy-btn" data-add>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar à base
+      </button>
     </div>
   `;
   wireCopy(aiBody, aiItem);
+  const addBtn = aiBody.querySelector('[data-add]');
+  addBtn.addEventListener('click', () => salvarObjecaoNaBase(objecaoText, respostaTexto, addBtn));
   return el;
 }
 
@@ -939,6 +1035,35 @@ document.addEventListener('keydown', (e) => {
 
 renderCats();
 renderAll();
+
+/* Carrega as objeções que o time já adicionou à base (guardadas no banco),
+   e junta com as fixas. Roda depois do primeiro render pra não travar a
+   abertura da página esperando a rede. */
+(async function carregarObjecoesSalvas(){
+  try{
+    const r = await fetch(LIST_ENDPOINT);
+    if(!r.ok) return;
+    const dados = await r.json();
+    const lista = (dados && Array.isArray(dados.objecoes)) ? dados.objecoes : [];
+    if(!lista.length) return;
+    lista.forEach(o => {
+      DATA.push(prepareItem({
+        cat: o.categoria || NOVA_CATEGORIA_IA,
+        quote: o.pergunta,
+        behind: "Objeção real trazida por um SDR e resolvida pela IA em tempo real.",
+        technique: "Sugerida pela IA",
+        script: o.resposta,
+        tone: "Gerada automaticamente e ainda não revisada pelo marketing. Se achar que pode melhorar, avisa a equipe.",
+        keywords: o.pergunta
+      }));
+    });
+    categories = computeCategories();
+    renderCats();
+    renderAll();
+  } catch(err){
+    // Sem banco configurado ainda, ou rede falhou: segue só com a base fixa, sem quebrar nada.
+  }
+})();
 </script>
 
 </body>
