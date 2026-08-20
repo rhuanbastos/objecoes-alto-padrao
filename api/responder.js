@@ -105,7 +105,7 @@ module.exports = async function handler(req, res) {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.8,
-            maxOutputTokens: 300
+            maxOutputTokens: 500, thinkingConfig: { thinkingBudget: 0 }
           }
         })
       }
