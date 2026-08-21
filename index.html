@@ -249,6 +249,8 @@
   }
   .copy-btn:hover{border-color:var(--accent); color:var(--accent-deep);}
   .copy-btn.copied{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .copy-btn.danger-btn{color:#b91c1c; border-color:#f3c8c8;}
+  .copy-btn.danger-btn:hover{background:#b91c1c; color:#fff; border-color:#b91c1c;}
 
   /* Bloco "por que funciona": colapsado por padrão, é material de treino, não a resposta em si */
   .why-details{margin-top:16px; border-top:1px solid var(--border); padding-top:12px;}
@@ -650,6 +652,11 @@ function scriptDetailHtml(item, extraClass){
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
         Copiar resposta
       </button>
+      ${item.id ? `
+      <button class="copy-btn danger-btn" data-delete>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Excluir
+      </button>` : ''}
     </div>
 
     <details class="why-details">
@@ -687,6 +694,46 @@ function wireCopy(container, item){
   });
 }
 
+const DELETE_ENDPOINT = 'api/delete-objecao';
+
+function removeItemFromData(item){
+  const idx = DATA.indexOf(item);
+  if(idx === -1) return;
+  DATA.splice(idx, 1);
+  categories = computeCategories();
+  if(!categories.includes(activeCat)) activeCat = "Todas";
+  renderCats();
+  renderAll();
+}
+
+function wireDelete(container, item){
+  const btn = container.querySelector('[data-delete]');
+  if(!btn || !item.id) return;
+  btn.addEventListener('click', async () => {
+    const senha = prompt('Senha de administrador pra excluir essa objeção da base:');
+    if(senha === null) return; // cancelou
+    btn.disabled = true;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = 'Excluindo...';
+    try{
+      const r = await fetch(DELETE_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, senha })
+      });
+      const dados = await r.json().catch(() => ({}));
+      if(!r.ok){
+        throw new Error(dados && dados.error || 'Falha ao excluir.');
+      }
+      removeItemFromData(item);
+    } catch(err){
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+      alert(err.message || 'Não consegui excluir essa objeção agora. Tenta de novo em instantes.');
+    }
+  });
+}
+
 function renderCallout(topItem, alts){
   const container = document.createElement('div');
   container.className = 'match-callout';
@@ -709,10 +756,12 @@ function renderCallout(topItem, alts){
     bodyMount.querySelector('[data-reveal]').addEventListener('click', () => {
       bodyMount.innerHTML = scriptDetailHtml(topItem);
       wireCopy(bodyMount, topItem);
+      wireDelete(bodyMount, topItem);
     });
   } else {
     bodyMount.innerHTML = scriptDetailHtml(topItem);
     wireCopy(bodyMount, topItem);
+    wireDelete(bodyMount, topItem);
   }
 
   if(alts.length){
@@ -762,6 +811,7 @@ function renderCard(item, idx){
     if(revealed){
       bodyMount.innerHTML = `<div class="card-body-inner">${scriptDetailHtml(item)}</div>`;
       wireCopy(bodyMount, item);
+      wireDelete(bodyMount, item);
       bodyMount.querySelectorAll('details').forEach(det => {
         det.addEventListener('toggle', () => {
           if(card.classList.contains('open')) setOpen(true);
@@ -890,6 +940,7 @@ function addObjecaoToLocalData(entry){
   // Atualização otimista: já entra na lista local (contador, busca, categoria)
   // sem esperar recarregar a página.
   DATA.push(prepareItem({
+    id: entry.id,
     cat: entry.categoria || NOVA_CATEGORIA_IA,
     quote: entry.pergunta,
     behind: "Objeção real trazida por um SDR e resolvida pela IA em tempo real.",
@@ -918,7 +969,7 @@ async function salvarObjecaoNaBase(objecaoText, respostaTexto, btn){
       throw new Error(dados && dados.error || 'Falha ao salvar.');
     }
     btn.innerHTML = 'Adicionado à base ✓';
-    addObjecaoToLocalData({ categoria: NOVA_CATEGORIA_IA, pergunta: objecaoText, resposta: respostaTexto });
+    addObjecaoToLocalData({ id: dados.id, categoria: NOVA_CATEGORIA_IA, pergunta: objecaoText, resposta: respostaTexto });
   } catch(err){
     btn.disabled = false;
     btn.innerHTML = originalHtml;
@@ -1048,6 +1099,7 @@ renderAll();
     if(!lista.length) return;
     lista.forEach(o => {
       DATA.push(prepareItem({
+        id: o.id,
         cat: o.categoria || NOVA_CATEGORIA_IA,
         quote: o.pergunta,
         behind: "Objeção real trazida por um SDR e resolvida pela IA em tempo real.",
