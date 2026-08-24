@@ -3,8 +3,8 @@
 // index.html), confere se é um e-mail @aguiaconsultoriaimobiliaria.com de
 // verdade, e cria o cookie de sessão que libera o uso da ferramenta.
 
-const { verificarTokenGoogle, criarCookieSessao } = require('./auth');
-const { registrarUso } = require('./db');
+const { verificarTokenGoogle, criarCookieSessao } = require('../lib/auth');
+const { registrarUso } = require('../lib/db');
 
 module.exports = async function handler(req, res){
   if (req.method !== 'POST') {
