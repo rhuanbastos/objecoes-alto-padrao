@@ -6,8 +6,8 @@
 // Variável de ambiente necessária (configurar no painel da Vercel):
 //   ADMIN_PASSWORD -> senha simples que só a gestão conhece
 
-const { getPool, ensureTable } = require('./db');
-const { exigirSessao } = require('./auth');
+const { getPool, ensureTable } = require('../lib/db');
+const { exigirSessao } = require('../lib/auth');
 
 module.exports = async function handler(req, res){
   if (req.method !== 'POST') {
