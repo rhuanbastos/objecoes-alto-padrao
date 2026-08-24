@@ -5,9 +5,9 @@
 // pra quem tiver sessão válida, em vez de ficarem visíveis no código-fonte
 // da página pra qualquer pessoa, mesmo sem estar logada.
 
-const { exigirSessao } = require('./auth');
-const { getPool, ensureTable } = require('./db');
-const FIXAS = require('./objecoes-fixas');
+const { exigirSessao } = require('../lib/auth');
+const { getPool, ensureTable } = require('../lib/db');
+const FIXAS = require('../lib/objecoes-fixas');
 
 module.exports = async function handler(req, res){
   if (req.method !== 'GET') {
