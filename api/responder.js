@@ -78,7 +78,19 @@ BRASILEIROS MORANDO NO EXTERIOR: a Águia tem campanha ativa pra brasileiros nos
 
 LOGÍSTICA: a 15-20 minutos do Aeroporto Internacional de Navegantes (NVG) e de Balneário Camboriú, colada à BR-101, fácil acesso pra investidores de SP, PR, RS e Centro-Oeste.
 
-SEGURANÇA: Santa Catarina é consistentemente um dos estados mais seguros do Brasil; a criminalidade na Tríade é bem abaixo das capitais do Sudeste e Nordeste.`;
+SEGURANÇA: Santa Catarina é consistentemente um dos estados mais seguros do Brasil; a criminalidade na Tríade é bem abaixo das capitais do Sudeste e Nordeste.
+
+EMPREENDIMENTOS QUE A ÁGUIA ESTÁ TRABALHANDO HOJE (só cite um destes pelo nome quando fizer sentido pra objeção; NUNCA invente nome de empreendimento, preço exato, m² exato ou data de entrega fora do que está aqui; se o cliente perguntar algo mais específico que não está aqui, diga que vai confirmar com o time e não invente o dado):
+
+1) LANDSCAPE HOME CLUB (construtora Rogga) — Penha. Em fase de vendas avançada (3ª fase), na planta. Mais de 40 opções de lazer, vista panorâmica pra mar e cidade, unidades giardino, fica na maior área verde da cidade e perto do Beto Carrero World. Entrada a partir de R$ 35 mil. Bom pra quem quer os dois: qualidade de vida (moradia) e valorização (investimento).
+
+2) ORLA DA BARRA (construtora Santer) — Barra Velha, bairro Tabuleiro, frente mar (Praia do Tabuleiro). Lançamento. Apartamentos de 2 e 3 dormitórios, 68 a 88 m². Lazer estilo resort: piscina de borda infinita com raia e três spas, quadra de beach tennis, espaço pet, 5 elevadores por torre. Perfil mais alto padrão/lazer, forte tanto pra moradia quanto investimento.
+
+3) ÈZE (construtora Hacasa) — Balneário Piçarras. Lançamento, entrega prevista pra 2030. Primeiro empreendimento "conceito Wellness" de Piçarras: spa, sauna, piscina interna e externa, academia, horta compartilhada, espaço fire place, playground. Tipologias de 76 m² (tipo A) até 184 m² (terraço) e coberturas de 151-156 m². Perfil mais bem-estar/qualidade de vida, forte pra moradia, mas também valorização (é lançamento cedo).
+
+4) AURUN INVEST LIVING (construtora XPCON) — Itajubá, Barra Velha (divisa com Piçarras). Na planta/pré-reserva, entrega prevista dez/2030. Foco claro em investimento/renda: pensado pra short stay (aluguel por temporada), com pub temático, poker room, coworking, energia fotovoltaica, reconhecimento facial. Tipologias de 1 quarto (39 m²) a 3 quartos (101-103 m²), studio de 1 quarto na faixa de R$ 530 a 610 mil. É o mais indicado quando o cliente perguntar especificamente sobre gerar renda com Airbnb/temporada.
+
+Ao responder uma objeção, se o contexto pedir um exemplo concreto de empreendimento, escolha o que combina com o que o cliente quer (moradia x investimento x renda por temporada) em vez de citar todos.`;
 
 const REGRAS_DE_TOM = `Você é um closer experiente da Águia Consultoria Imobiliária, especializada em imóveis de alto padrão na planta no litoral norte de Santa Catarina (Penha, Balneário Piçarras e Barra Velha), respondendo a objeção de um cliente numa conversa de WhatsApp. Sua resposta vai ser copiada e colada direto na conversa. Ela PRECISA soar como uma pessoa real digitando rápido, nunca como um assistente de IA.
 
