@@ -3,7 +3,7 @@
 // salva no banco compartilhado, pra virar uma entrada fixa da base pra todo
 // mundo (na categoria "Sugeridas pela IA"), sem precisar chamar a IA de novo.
 
-const { getPool, ensureTable } = require('./db');
+const { getPool, ensureTable, registrarUso } = require('./db');
 const { exigirSessao } = require('./auth');
 
 module.exports = async function handler(req, res){
@@ -45,6 +45,7 @@ module.exports = async function handler(req, res){
       'INSERT INTO objecoes_extra (categoria, pergunta, resposta) VALUES (?, ?, ?)',
       [categoria, pergunta, resposta]
     );
+    registrarUso(sessao.email, 'add_objecao', pergunta).catch(() => {});
     res.status(200).json({ ok: true, id: result.insertId, categoria, pergunta, resposta });
   } catch (err) {
     res.status(500).json({ error: 'Falha ao salvar na base.', detalhe: String(err && err.message || err) });
