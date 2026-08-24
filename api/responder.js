@@ -115,8 +115,8 @@ Objeção: "${objecaoCliente}"
 Resposta:`;
 }
 
-const { exigirSessao } = require('./auth');
-const { registrarUso } = require('./db');
+const { exigirSessao } = require('../lib/auth');
+const { registrarUso } = require('../lib/db');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
