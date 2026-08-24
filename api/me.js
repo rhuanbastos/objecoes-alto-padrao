@@ -15,5 +15,5 @@ module.exports = async function handler(req, res){
     res.status(401).json({ error: 'Não autenticado.' });
     return;
   }
-  res.status(200).json({ email: sessao.email });
+  res.status(200).json({ email: sessao.email, nome: sessao.nome || '' });
 };
