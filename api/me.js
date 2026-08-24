@@ -3,7 +3,7 @@
 // ninguém estiver logado. O index.html chama isso ao carregar a página pra
 // decidir se mostra a ferramenta ou a tela de login.
 
-const { lerSessao } = require('./auth');
+const { lerSessao } = require('../lib/auth');
 
 module.exports = async function handler(req, res){
   if (req.method !== 'GET') {
