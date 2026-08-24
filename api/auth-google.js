@@ -4,6 +4,7 @@
 // verdade, e cria o cookie de sessão que libera o uso da ferramenta.
 
 const { verificarTokenGoogle, criarCookieSessao } = require('./auth');
+const { registrarUso } = require('./db');
 
 module.exports = async function handler(req, res){
   if (req.method !== 'POST') {
@@ -24,8 +25,9 @@ module.exports = async function handler(req, res){
 
   try{
     const { email, nome } = await verificarTokenGoogle(credential);
-    const cookie = criarCookieSessao(email);
+    const cookie = criarCookieSessao(email, nome);
     res.setHeader('Set-Cookie', cookie);
+    registrarUso(email, 'login', nome || '').catch(() => {});
     res.status(200).json({ ok: true, email, nome });
   } catch(err){
     const status = err && err.dominioInvalido ? 403 : 401;
