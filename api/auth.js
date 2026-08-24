@@ -54,11 +54,11 @@ async function verificarTokenGoogle(idToken){
   return { email, nome: payload.name || '' };
 }
 
-function criarCookieSessao(email){
+function criarCookieSessao(email, nome){
   if(!process.env.SESSION_SECRET){
     throw new Error('SESSION_SECRET não configurado no servidor.');
   }
-  const token = jwt.sign({ email }, process.env.SESSION_SECRET, { expiresIn: SESSAO_DIAS + 'd' });
+  const token = jwt.sign({ email, nome: nome || '' }, process.env.SESSION_SECRET, { expiresIn: SESSAO_DIAS + 'd' });
   const maxAge = SESSAO_DIAS * 24 * 60 * 60;
   return `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax`;
 }
@@ -75,7 +75,7 @@ function lerSessao(req){
   if(!token) return null;
   try{
     const dados = jwt.verify(token, process.env.SESSION_SECRET);
-    return { email: dados.email };
+    return { email: dados.email, nome: dados.nome || '' };
   } catch(e){
     return null;
   }
