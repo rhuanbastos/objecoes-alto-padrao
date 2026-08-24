@@ -108,13 +108,6 @@
   .clear-btn:hover{background:var(--orange-soft); color:var(--orange-deep);}
   .search-wrap.has-value .clear-btn{display:flex;}
 
-  .mode-toggle{
-    display:flex; align-items:center; gap:8px; font-size:13.5px; color:rgba(255,255,255,0.85);
-    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); padding:9px 14px; border-radius:10px;
-    cursor:pointer; user-select:none;
-  }
-  .mode-toggle input{accent-color:var(--orange); width:15px; height:15px; cursor:pointer;}
-
   .stat-pill{
     font-size:12.5px; color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
     padding:9px 14px; border-radius:10px; white-space:nowrap;
@@ -144,6 +137,13 @@
   .cat-btn:hover{border-color:var(--orange); color:#fff; transform:translateY(-1px);}
   .cat-btn:active{transform:translateY(0);}
   .cat-btn.active{background:var(--orange); color:var(--navy-deep); border-color:var(--orange); font-weight:700;}
+  .cat-badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:17px; height:17px; padding:0 5px; margin-left:7px; border-radius:999px;
+    background:var(--orange); color:var(--navy-deep); font-size:11px; font-weight:800;
+    vertical-align:middle;
+  }
+  .cat-btn.active .cat-badge{background:var(--navy-deep); color:var(--orange);}
 
   /* Main */
   main{max-width:1180px; margin:0 auto; padding:26px 28px 80px;}
@@ -330,6 +330,10 @@
     background:none; border:none; color:var(--orange); font-size:12px; cursor:pointer;
     padding:0; text-decoration:underline; font-family:inherit;
   }
+  .session-info .painel-link{
+    color:rgba(255,255,255,0.55); font-size:12px; text-decoration:underline;
+  }
+  .session-info .painel-link:hover{ color:var(--orange); }
 </style>
 </head>
 <body>
@@ -359,10 +363,6 @@
         <input id="search" type="text" placeholder="Cola aqui a mensagem do cliente...">
         <button class="clear-btn" id="clearBtn" title="Limpar busca"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
-      <label class="mode-toggle">
-        <input type="checkbox" id="practiceMode">
-        Modo treino (esconder respostas)
-      </label>
       <div class="stat-pill" id="statPill"><strong>15</strong> objeções documentadas</div>
     </div>
     <div class="hint-row">Cola a frase inteira pra achar mais rápido · atalho <kbd>/</kbd> foca a busca</div>
@@ -451,8 +451,13 @@ function scoreItem(queryTokens, queryNorm, item){
   const headerEl = document.querySelector('header.top');
   if(!headerEl) return;
   let ticking = false;
+  let isCompact = false;
   function updateCompact(){
-    headerEl.classList.toggle('compact', window.scrollY > 24);
+    // Zona de folga entre "liga" e "desliga" pra não ficar oscilando/tremendo
+    // quando o scroll para bem em cima do limite (ex: arrastando devagar).
+    if(!isCompact && window.scrollY > 48){ isCompact = true; }
+    else if(isCompact && window.scrollY < 16){ isCompact = false; }
+    headerEl.classList.toggle('compact', isCompact);
     ticking = false;
   }
   window.addEventListener('scroll', function(){
@@ -470,7 +475,6 @@ const catsWrap = document.getElementById('cats');
 const searchInput = document.getElementById('search');
 const searchWrap = document.getElementById('searchWrap');
 const clearBtn = document.getElementById('clearBtn');
-const practiceToggle = document.getElementById('practiceMode');
 const statPill = document.getElementById('statPill');
 
 function computeCategories(){
@@ -479,7 +483,6 @@ function computeCategories(){
 let categories = computeCategories();
 let activeCat = "Todas";
 let query = "";
-let practiceMode = false;
 
 function escapeHtml(str){
   return str.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
@@ -491,6 +494,16 @@ function renderCats(){
     const btn = document.createElement('button');
     btn.className = 'cat-btn' + (cat === activeCat ? ' active' : '');
     btn.textContent = cat;
+    if(cat === NOVA_CATEGORIA_IA){
+      const count = DATA.filter(d => d.cat === NOVA_CATEGORIA_IA).length;
+      if(count > 0){
+        const badge = document.createElement('span');
+        badge.className = 'cat-badge';
+        badge.textContent = count;
+        badge.title = 'Objeções adicionadas pelos SDRs, ainda não revisadas pelo marketing';
+        btn.appendChild(badge);
+      }
+    }
     btn.addEventListener('click', () => {
       activeCat = cat;
       // clicar numa categoria é "navegar", não "refinar busca": limpa a busca pra não some resultado por engano
@@ -604,7 +617,6 @@ function renderCallout(topItem, alts){
   container.className = 'match-callout';
 
   const bodyId = 'callout-body';
-  const showVeil = practiceMode;
 
   container.innerHTML = `
     <div class="match-callout-label">
@@ -616,18 +628,9 @@ function renderCallout(topItem, alts){
   `;
 
   const bodyMount = container.querySelector('#' + bodyId);
-  if(showVeil){
-    bodyMount.innerHTML = `<div class="practice-veil" style="padding:4px 0 0;"><button class="reveal-btn" data-reveal>Revelar resposta</button></div>`;
-    bodyMount.querySelector('[data-reveal]').addEventListener('click', () => {
-      bodyMount.innerHTML = scriptDetailHtml(topItem);
-      wireCopy(bodyMount, topItem);
-      wireDelete(bodyMount, topItem);
-    });
-  } else {
-    bodyMount.innerHTML = scriptDetailHtml(topItem);
-    wireCopy(bodyMount, topItem);
-    wireDelete(bodyMount, topItem);
-  }
+  bodyMount.innerHTML = scriptDetailHtml(topItem);
+  wireCopy(bodyMount, topItem);
+  wireDelete(bodyMount, topItem);
 
   if(alts.length){
     const altsWrap = document.createElement('div');
@@ -670,26 +673,16 @@ function renderCard(item, idx){
 
   const bodyMount = card.querySelector('.card-body-mount');
   const bodyEl = card.querySelector('.card-body');
-  let revealed = !practiceMode;
 
   function paintBody(){
-    if(revealed){
-      bodyMount.innerHTML = `<div class="card-body-inner">${scriptDetailHtml(item)}</div>`;
-      wireCopy(bodyMount, item);
-      wireDelete(bodyMount, item);
-      bodyMount.querySelectorAll('details').forEach(det => {
-        det.addEventListener('toggle', () => {
-          if(card.classList.contains('open')) setOpen(true);
-        });
+    bodyMount.innerHTML = `<div class="card-body-inner">${scriptDetailHtml(item)}</div>`;
+    wireCopy(bodyMount, item);
+    wireDelete(bodyMount, item);
+    bodyMount.querySelectorAll('details').forEach(det => {
+      det.addEventListener('toggle', () => {
+        if(card.classList.contains('open')) setOpen(true);
       });
-    } else {
-      bodyMount.innerHTML = `<div class="card-body-inner"><div class="practice-veil"><button class="reveal-btn" data-reveal>Revelar resposta</button></div></div>`;
-      bodyMount.querySelector('[data-reveal]').addEventListener('click', () => {
-        revealed = true;
-        paintBody();
-        setOpen(true);
-      });
-    }
+    });
   }
   paintBody();
 
@@ -944,7 +937,6 @@ clearBtn.addEventListener('click', () => {
   searchInput.focus();
   renderAll();
 });
-practiceToggle.addEventListener('change', (e) => { practiceMode = e.target.checked; renderAll(); });
 
 document.addEventListener('keydown', (e) => {
   if(e.key === '/' && document.activeElement !== searchInput){
@@ -965,9 +957,11 @@ function mostrarErroLogin(msg){
   loginError.style.display = 'block';
 }
 
-function mostrarSessao(email){
+function mostrarSessao(email, nome){
+  const primeiroNome = (nome || '').trim().split(/\s+/)[0] || '';
+  const saudacao = primeiroNome ? `Olá, ${primeiroNome}` : `Logado como ${email}`;
   sessionInfo.style.display = 'flex';
-  sessionInfo.innerHTML = `Logado como ${escapeHtml(email)} <button type="button" id="logoutBtn">Sair</button>`;
+  sessionInfo.innerHTML = `<span title="${escapeHtml(email)}">${escapeHtml(saudacao)}</span> <a href="painel.html" class="painel-link">Ver uso da equipe</a> <button type="button" id="logoutBtn">Sair</button>`;
   document.getElementById('logoutBtn').addEventListener('click', fazerLogout);
 }
 
@@ -989,7 +983,7 @@ async function handleCredentialResponse(response){
       mostrarErroLogin(dados && dados.error || 'Não foi possível entrar. Tenta de novo.');
       return;
     }
-    await carregarTudoELiberar(dados.email);
+    await carregarTudoELiberar(dados.email, dados.nome);
   } catch(err){
     mostrarErroLogin('Falha ao conectar. Tenta de novo em instantes.');
   }
@@ -1010,7 +1004,7 @@ function iniciarBotaoGoogle(clientId){
   google.accounts.id.renderButton(googleBtnContainer, { theme: 'filled_black', size: 'large', text: 'continue_with' });
 }
 
-async function carregarTudoELiberar(email){
+async function carregarTudoELiberar(email, nome){
   try{
     const r = await fetch(OBJECOES_ENDPOINT);
     if(!r.ok){
@@ -1040,7 +1034,7 @@ async function carregarTudoELiberar(email){
 
     categories = computeCategories();
     loginGate.classList.add('hidden');
-    if(email) mostrarSessao(email);
+    if(email) mostrarSessao(email, nome);
     renderCats();
     renderAll();
   } catch(err){
@@ -1053,7 +1047,7 @@ async function carregarTudoELiberar(email){
     const rMe = await fetch(ME_ENDPOINT);
     if(rMe.ok){
       const dadosMe = await rMe.json();
-      await carregarTudoELiberar(dadosMe.email);
+      await carregarTudoELiberar(dadosMe.email, dadosMe.nome);
       return;
     }
   } catch(err){
