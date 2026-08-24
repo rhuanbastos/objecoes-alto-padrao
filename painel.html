@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Uso · Águia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#141414; --navy-deep:#000000;
+    --orange:#f2901c; --orange-deep:#d97a12; --orange-soft:#fdead2;
+    --bg:#f7f7f6; --surface:#ffffff; --surface-alt:#f0efed;
+    --ink:#161615; --muted:#5c5b58; --muted-2:#8a8886;
+    --border:#e4e2df; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    min-height:100vh;
+  }
+  header.top{
+    background:linear-gradient(165deg, var(--navy) 0%, var(--navy-deep) 100%);
+    padding:24px 28px; color:#fff;
+  }
+  .header-inner{max-width:1080px; margin:0 auto;}
+  .eyebrow{
+    text-transform:uppercase; letter-spacing:.16em; font-size:11px; font-weight:600;
+    color:var(--orange); margin-bottom:8px;
+  }
+  h1{font-weight:300; font-size:26px; margin:0 0 6px; color:#fff;}
+  .subtitle{color:rgba(255,255,255,0.68); font-size:14px; margin:0;}
+  a.voltar{color:rgba(255,255,255,0.7); font-size:13px; text-decoration:underline;}
+  a.voltar:hover{color:var(--orange);}
+
+  main{max-width:1080px; margin:0 auto; padding:28px;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:24px; margin-bottom:22px;
+  }
+  .card h2{font-size:16px; margin:0 0 14px; font-weight:700;}
+
+  .msg{font-size:14px; color:var(--muted); line-height:1.6;}
+  .msg a{color:var(--orange-deep); font-weight:600;}
+
+  .senha-form{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .senha-form input{
+    flex:1 1 240px; padding:11px 14px; border-radius:10px; border:1.5px solid var(--border);
+    font-size:14px; font-family:inherit; outline:none;
+  }
+  .senha-form input:focus{border-color:var(--orange);}
+  .senha-form button{
+    padding:11px 20px; border-radius:10px; border:none; background:var(--orange); color:#fff;
+    font-weight:700; font-size:14px; cursor:pointer; font-family:inherit;
+  }
+  .senha-form button:hover{background:var(--orange-deep);}
+  .senha-form button:disabled{opacity:.6; cursor:default;}
+  .erro{color:#b3261e; font-size:13px; margin-top:10px; display:none;}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--border);}
+  th{color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em;}
+  td.num{font-weight:700; color:var(--ink); text-align:center;}
+  th.num{text-align:center;}
+  tr:last-child td{border-bottom:none;}
+  .table-wrap{overflow-x:auto;}
+  .vazio{color:var(--muted-2); font-size:13.5px; padding:12px 0;}
+  .detalhe-cel{max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--muted);}
+  .acao-tag{
+    display:inline-block; padding:2px 9px; border-radius:999px; font-size:11.5px; font-weight:700;
+    background:var(--orange-soft); color:var(--orange-deep);
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="header-inner">
+    <div class="eyebrow">Ferramenta interna · Uso da equipe</div>
+    <h1>Painel de Uso</h1>
+    <p class="subtitle">Quantas vezes cada pessoa usou o Gerador de Respostas para Objeções.</p>
+    <p style="margin-top:14px;"><a class="voltar" href="index.html">&larr; Voltar pra ferramenta</a></p>
+  </div>
+</header>
+
+<main>
+
+  <div class="card" id="cardSenha">
+    <h2>Acesso restrito</h2>
+    <div class="msg" id="msgAcesso">Carregando...</div>
+    <form class="senha-form" id="formSenha" style="display:none; margin-top:12px;">
+      <input type="password" id="senhaInput" placeholder="Senha de administrador" autocomplete="off">
+      <button type="submit" id="btnEntrar">Ver estatísticas</button>
+    </form>
+    <div class="erro" id="erroMsg"></div>
+  </div>
+
+  <div id="resultados" style="display:none;">
+    <div class="card">
+      <h2>Uso por pessoa</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>E-mail</th>
+              <th class="num">Respostas geradas</th>
+              <th class="num">Objeções adicionadas</th>
+              <th class="num">Logins</th>
+              <th>Último acesso</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaUsuarios"></tbody>
+        </table>
+      </div>
+      <div class="vazio" id="vazioUsuarios" style="display:none;">Ainda não há uso registrado.</div>
+    </div>
+
+    <div class="card">
+      <h2>Atividade recente</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Quando</th>
+              <th>Quem</th>
+              <th>Ação</th>
+              <th>Detalhe</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaRecentes"></tbody>
+        </table>
+      </div>
+      <div class="vazio" id="vazioRecentes" style="display:none;">Nenhuma atividade registrada ainda.</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const ME_ENDPOINT = 'api/me';
+const USO_ENDPOINT = 'api/uso';
+
+const msgAcesso = document.getElementById('msgAcesso');
+const formSenha = document.getElementById('formSenha');
+const senhaInput = document.getElementById('senhaInput');
+const btnEntrar = document.getElementById('btnEntrar');
+const erroMsg = document.getElementById('erroMsg');
+const cardSenha = document.getElementById('cardSenha');
+const resultados = document.getElementById('resultados');
+
+const ACAO_LABEL = {
+  responder: 'Pediu resposta',
+  add_objecao: 'Adicionou objeção',
+  login: 'Login'
+};
+
+function escapeHtml(str){
+  return String(str == null ? '' : str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+
+function formatarData(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  if(isNaN(d.getTime())) return '—';
+  return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+
+function pintarResultados(dados){
+  const porUsuario = Array.isArray(dados.porUsuario) ? dados.porUsuario : [];
+  const recentes = Array.isArray(dados.recentes) ? dados.recentes : [];
+
+  const tbodyU = document.getElementById('tabelaUsuarios');
+  tbodyU.innerHTML = porUsuario.map(u => `
+    <tr>
+      <td>${escapeHtml(u.email)}</td>
+      <td class="num">${escapeHtml(u.respostas || 0)}</td>
+      <td class="num">${escapeHtml(u.objecoes_adicionadas || 0)}</td>
+      <td class="num">${escapeHtml(u.logins || 0)}</td>
+      <td>${formatarData(u.ultimo_acesso)}</td>
+    </tr>
+  `).join('');
+  document.getElementById('vazioUsuarios').style.display = porUsuario.length ? 'none' : 'block';
+
+  const tbodyR = document.getElementById('tabelaRecentes');
+  tbodyR.innerHTML = recentes.map(r => `
+    <tr>
+      <td>${formatarData(r.criado_em)}</td>
+      <td>${escapeHtml(r.email)}</td>
+      <td><span class="acao-tag">${escapeHtml(ACAO_LABEL[r.acao] || r.acao)}</span></td>
+      <td class="detalhe-cel" title="${escapeHtml(r.detalhe || '')}">${escapeHtml(r.detalhe || '—')}</td>
+    </tr>
+  `).join('');
+  document.getElementById('vazioRecentes').style.display = recentes.length ? 'none' : 'block';
+
+  cardSenha.style.display = 'none';
+  resultados.style.display = 'block';
+}
+
+formSenha.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  erroMsg.style.display = 'none';
+  btnEntrar.disabled = true;
+  const original = btnEntrar.textContent;
+  btnEntrar.textContent = 'Verificando...';
+  try{
+    const r = await fetch(USO_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senha: senhaInput.value })
+    });
+    const dados = await r.json().catch(() => ({}));
+    if(!r.ok){
+      erroMsg.textContent = (dados && dados.error) || 'Não foi possível verificar a senha.';
+      erroMsg.style.display = 'block';
+      return;
+    }
+    pintarResultados(dados);
+  } catch(err){
+    erroMsg.textContent = 'Falha ao conectar. Tenta de novo em instantes.';
+    erroMsg.style.display = 'block';
+  } finally {
+    btnEntrar.disabled = false;
+    btnEntrar.textContent = original;
+  }
+});
+
+(async function iniciar(){
+  try{
+    const r = await fetch(ME_ENDPOINT);
+    if(!r.ok){
+      msgAcesso.innerHTML = 'Você precisa entrar na <a href="index.html">ferramenta principal</a> primeiro com seu e-mail @aguiaconsultoriaimobiliaria.com.';
+      return;
+    }
+    msgAcesso.textContent = 'Digite a senha de administrador pra ver as estatísticas de uso da equipe.';
+    formSenha.style.display = 'flex';
+    senhaInput.focus();
+  } catch(err){
+    msgAcesso.textContent = 'Não consegui confirmar seu login agora. Recarrega a página.';
+  }
+})();
+</script>
+
+</body>
+</html>
