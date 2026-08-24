@@ -9,8 +9,8 @@
 //   DB_HOST, DB_USER, DB_PASS, DB_NAME -> banco de dados
 //   ADMIN_PASSWORD -> mesma senha usada pra excluir objeções
 
-const { getPool, ensureUsoTable } = require('./db');
-const { exigirSessao } = require('./auth');
+const { getPool, ensureUsoTable } = require('../lib/db');
+const { exigirSessao } = require('../lib/auth');
 
 module.exports = async function handler(req, res){
   if (req.method !== 'POST') {
