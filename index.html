@@ -124,6 +124,20 @@
     padding:1px 6px; font-family:inherit; font-size:11px; color:#fff;
   }
 
+  .audio-actions{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px;}
+  .audio-btn{
+    display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600;
+    padding:8px 15px; border-radius:999px; border:1px solid rgba(255,255,255,0.2);
+    background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.85); cursor:pointer; transition:all .15s;
+  }
+  .audio-btn:hover{border-color:var(--orange); color:#fff; transform:translateY(-1px);}
+  .audio-btn:active{transform:translateY(0);}
+  .audio-btn.recording{background:#b91c1c; border-color:#b91c1c; color:#fff;}
+  .audio-btn.recording .rec-dot{background:#fff; animation:recPulse 1.1s ease-in-out infinite;}
+  .rec-dot{width:8px; height:8px; border-radius:50%; background:#e34948; flex-shrink:0;}
+  @keyframes recPulse{0%,100%{opacity:1;} 50%{opacity:.25;}}
+  .audio-status{font-size:12.5px; color:rgba(255,255,255,0.6);}
+
   .cats{
     display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;
     max-height:260px; opacity:1; overflow:hidden;
@@ -241,6 +255,17 @@
   .technique{font-size:13.5px; color:var(--ink); font-weight:600;}
   .tone-tip{font-size:13.5px; color:var(--muted); line-height:1.5;}
   .source-note{font-size:11.5px; color:var(--muted-2); margin-top:14px; font-style:italic;}
+
+  /* Transcrição do áudio: mostrada acima da resposta, pro SDR conferir se a IA entendeu certo */
+  .transcricao-label{
+    display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--muted-2); margin:0 0 7px;
+  }
+  .transcricao-box{
+    background:var(--surface-alt); border:1px solid var(--border); border-radius:14px; border-top-left-radius:4px;
+    padding:14px 16px; font-size:13.5px; line-height:1.6; color:var(--muted); white-space:pre-line;
+    margin-bottom:14px; font-style:italic;
+  }
 
   .card-actions{display:flex; gap:8px; margin-top:12px;}
   .copy-btn{
@@ -366,6 +391,19 @@
       <div class="stat-pill" id="statPill"><strong>15</strong> objeções documentadas</div>
     </div>
     <div class="hint-row">Cola a frase inteira pra achar mais rápido · atalho <kbd>/</kbd> foca a busca</div>
+
+    <div class="audio-actions" id="audioActions">
+      <input type="file" id="audioFileInput" accept="audio/*" style="display:none;">
+      <button class="audio-btn" id="btnAnexarAudio" type="button" title="Envia um áudio de WhatsApp que o cliente mandou">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05 12.25 20.24a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a1.5 1.5 0 0 1-2.12-2.12l8.49-8.48"/></svg>
+        Anexar áudio
+      </button>
+      <button class="audio-btn" id="btnGravarAudio" type="button" title="Grava um áudio agora pelo microfone">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        <span id="btnGravarLabel">Gravar áudio</span>
+      </button>
+      <span class="audio-status" id="audioStatus"></span>
+    </div>
     <div class="session-info" id="sessionInfo" style="display:none;"></div>
 
     <div class="cats" id="cats"></div>
@@ -919,6 +957,205 @@ async function tryAIFallback(objecaoText, myToken){
     if(existing) existing.replaceWith(renderAIErrorCallout(NOT_CONFIGURED_MSG));
   }
 }
+
+/* ---------- Áudio: SDR anexa ou grava a mensagem de voz do cliente e a IA transcreve + responde ---------- */
+
+const audioFileInput = document.getElementById('audioFileInput');
+const btnAnexarAudio = document.getElementById('btnAnexarAudio');
+const btnGravarAudio = document.getElementById('btnGravarAudio');
+const btnGravarLabel = document.getElementById('btnGravarLabel');
+const audioStatus = document.getElementById('audioStatus');
+
+const TAMANHO_MAX_AUDIO = 4 * 1024 * 1024; // ~4MB de áudio binário (o WhatsApp comprime bem, isso já é generoso)
+
+function renderAudioLoadingCallout(){
+  const el = document.createElement('div');
+  el.className = 'match-callout ai-callout fade-in';
+  el.id = 'aiCallout';
+  el.innerHTML = `
+    <div class="match-callout-label">
+      <span class="ai-spinner"></span>
+      Ouvindo o áudio e montando uma resposta...
+    </div>
+  `;
+  return el;
+}
+
+function renderAudioCallout(transcricao, respostaTexto){
+  const el = document.createElement('div');
+  el.className = 'match-callout ai-callout fade-in';
+  el.id = 'aiCallout';
+  el.innerHTML = `
+    <div class="match-callout-label">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+      Resposta montada a partir do áudio
+    </div>
+    <div id="aiAudioBody"></div>
+  `;
+  const aiItem = { quote: transcricao || '(áudio)', script: respostaTexto };
+  const body = el.querySelector('#aiAudioBody');
+  const transcricaoHtml = transcricao
+    ? `<div class="transcricao-label">O que a IA entendeu no áudio</div><div class="transcricao-box">"${escapeHtml(transcricao)}"</div>`
+    : `<div class="transcricao-box">Não consegui transcrever esse trecho com confiança, mas a resposta abaixo foi montada com base no áudio mesmo assim. Confere se faz sentido antes de mandar.</div>`;
+  body.innerHTML = `
+    ${transcricaoHtml}
+    <div class="whatsapp-label">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.4c1.4.8 3.1 1.2 5 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+      Pronto pra colar no WhatsApp
+    </div>
+    <div class="script-box">${escapeHtml(respostaTexto)}</div>
+    <div class="card-actions">
+      <button class="copy-btn" data-copy>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar resposta
+      </button>
+      <button class="copy-btn" data-add>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Adicionar à base
+      </button>
+    </div>
+  `;
+  wireCopy(body, aiItem);
+  const addBtn = body.querySelector('[data-add]');
+  addBtn.addEventListener('click', () => salvarObjecaoNaBase(transcricao || 'Objeção recebida por áudio', respostaTexto, addBtn));
+  return el;
+}
+
+function blobParaBase64(blob){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      // reader.result vem como "data:audio/xxx;base64,AAAA..." - manda só a parte depois da vírgula
+      const base64 = String(reader.result || '').split(',')[1] || '';
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function processarAudio(base64, mimeType){
+  if(!base64){
+    audioStatus.textContent = 'Não consegui ler esse áudio. Tenta de novo.';
+    return;
+  }
+  const myToken = ++searchToken;
+  if(debounceTimer){ clearTimeout(debounceTimer); debounceTimer = null; }
+  query = "";
+  searchInput.value = "";
+  searchWrap.classList.remove('has-value');
+  audioStatus.textContent = '';
+  grid.innerHTML = '';
+  empty.style.display = 'none';
+  gridHeading.style.display = 'none';
+  calloutMount.innerHTML = '';
+  calloutMount.appendChild(renderAudioLoadingCallout());
+
+  const NOT_CONFIGURED_MSG = 'A geração por IA ainda não foi publicada com a chave de API nesta versão. Tenta de novo daqui a pouco.';
+  try {
+    const r = await fetch(AI_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ audioBase64: base64, audioMimeType: mimeType })
+    });
+    if(myToken !== searchToken) return;
+
+    if(!r.ok){
+      const dados = await r.json().catch(() => ({}));
+      const existing = document.getElementById('aiCallout');
+      if(existing) existing.replaceWith(renderAIErrorCallout(dados && dados.error || NOT_CONFIGURED_MSG));
+      return;
+    }
+    const data = await r.json();
+    if(myToken !== searchToken) return;
+
+    if(!data || !data.resposta){
+      const existing = document.getElementById('aiCallout');
+      if(existing) existing.replaceWith(renderAIErrorCallout('Não consegui montar uma resposta a partir desse áudio. Tenta gravar de novo, bem próximo do microfone.'));
+      return;
+    }
+    const existing = document.getElementById('aiCallout');
+    if(existing) existing.replaceWith(renderAudioCallout(data.transcricao || '', data.resposta));
+  } catch(err){
+    if(myToken !== searchToken) return;
+    const existing = document.getElementById('aiCallout');
+    if(existing) existing.replaceWith(renderAIErrorCallout(NOT_CONFIGURED_MSG));
+  }
+}
+
+btnAnexarAudio.addEventListener('click', () => audioFileInput.click());
+
+audioFileInput.addEventListener('change', async () => {
+  const file = audioFileInput.files && audioFileInput.files[0];
+  audioFileInput.value = ''; // permite escolher o mesmo arquivo de novo depois
+  if(!file) return;
+  if(file.size > TAMANHO_MAX_AUDIO){
+    audioStatus.textContent = 'Esse áudio é muito grande (máx. ~4MB). Tenta um áudio de voz mais curto.';
+    return;
+  }
+  audioStatus.textContent = 'Enviando áudio...';
+  const base64 = await blobParaBase64(file);
+  processarAudio(base64, file.type || 'audio/mpeg');
+});
+
+// Gravação ao vivo pelo microfone, com parada automática em ~2min pra não gerar áudio gigante
+let mediaRecorder = null;
+let mediaStream = null;
+let recordedChunks = [];
+let recordAutoStopTimer = null;
+
+async function iniciarGravacao(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    audioStatus.textContent = 'Esse navegador não permite gravar áudio direto aqui. Tenta anexar o arquivo em vez disso.';
+    return;
+  }
+  try{
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch(err){
+    audioStatus.textContent = 'Não consegui acessar o microfone. Verifica a permissão do navegador.';
+    return;
+  }
+  recordedChunks = [];
+  const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+  mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
+  mediaRecorder.addEventListener('dataavailable', (e) => {
+    if(e.data && e.data.size > 0) recordedChunks.push(e.data);
+  });
+  mediaRecorder.addEventListener('stop', async () => {
+    mediaStream.getTracks().forEach(t => t.stop());
+    mediaStream = null;
+    btnGravarAudio.classList.remove('recording');
+    btnGravarLabel.textContent = 'Gravar áudio';
+    if(recordAutoStopTimer){ clearTimeout(recordAutoStopTimer); recordAutoStopTimer = null; }
+    if(!recordedChunks.length){
+      audioStatus.textContent = 'Não peguei nenhum áudio dessa gravação. Tenta de novo.';
+      return;
+    }
+    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+    audioStatus.textContent = 'Enviando gravação...';
+    const base64 = await blobParaBase64(blob);
+    processarAudio(base64, blob.type || 'audio/webm');
+  });
+  mediaRecorder.start();
+  btnGravarAudio.classList.add('recording');
+  btnGravarLabel.textContent = 'Gravando... (toca de novo pra parar)';
+  audioStatus.textContent = '';
+  recordAutoStopTimer = setTimeout(() => pararGravacao(), 120000);
+}
+
+function pararGravacao(){
+  if(mediaRecorder && mediaRecorder.state !== 'inactive'){
+    mediaRecorder.stop();
+  }
+}
+
+btnGravarAudio.addEventListener('click', () => {
+  if(mediaRecorder && mediaRecorder.state === 'recording'){
+    pararGravacao();
+  } else {
+    iniciarGravacao();
+  }
+});
 
 searchInput.addEventListener('input', (e) => {
   query = e.target.value;
