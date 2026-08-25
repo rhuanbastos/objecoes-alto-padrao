@@ -127,6 +127,46 @@ Objeção: "${objecaoCliente}"
 Resposta:`;
 }
 
+// Mesma lógica do montarPrompt, mas pro caso de áudio: em vez de já receber o texto
+// da objeção, o SDR manda o áudio (print de voz do WhatsApp) e o Gemini primeiro
+// transcreve, depois responde. Pedimos os dois num formato com marcador fixo
+// (TRANSCRICAO: / RESPOSTA:) pra dar pra separar depois com regex no servidor.
+function montarPromptAudio(){
+  const exemplosTexto = EXEMPLOS
+    .map(ex => `Objeção: "${ex.objecao}"\nResposta: ${ex.resposta}`)
+    .join('\n\n---\n\n');
+
+  return `${REGRAS_DE_TOM}
+
+${CONTEXTO_REGIAO}
+
+EXEMPLOS DO NOSSO TOM (responda sempre nesse estilo, mesmo para objeções diferentes destas):
+
+${exemplosTexto}
+
+---
+
+Agora ouça o áudio anexado (é um print de voz que um cliente mandou pro SDR pelo WhatsApp, com uma objeção sobre comprar imóvel). Faça duas coisas, nessa ordem, EXATAMENTE no formato abaixo, sem nenhum texto antes ou depois:
+
+TRANSCRICAO: <transcreva o áudio literalmente, palavra por palavra, em português. Se tiver algum trecho inaudível, marque como (inaudível) nesse trecho, mas transcreva o resto normalmente.>
+RESPOSTA: <no mesmo estilo dos exemplos acima e seguindo as regras de tom à risca, a resposta pronta pra colar no WhatsApp para a objeção que você ouviu no áudio>`;
+}
+
+// Separa o texto bruto que o Gemini devolveu em { transcricao, resposta } usando os
+// marcadores acima. Se por algum motivo o modelo não usar o formato (acontece raramente
+// com modelo de IA), cai num fallback: sem transcrição, e o texto inteiro vira a resposta,
+// pra nunca deixar o SDR sem nada na tela.
+function separarTranscricaoResposta(textoBruto){
+  const match = textoBruto.match(/TRANSCRI[ÇC][ÃA]O:\s*([\s\S]*?)\n\s*RESPOSTA:\s*([\s\S]*)/i);
+  if (match) {
+    return {
+      transcricao: match[1].trim(),
+      resposta: match[2].trim()
+    };
+  }
+  return { transcricao: '', resposta: textoBruto.trim() };
+}
+
 const { exigirSessao } = require('../lib/auth');
 const { registrarUso } = require('../lib/db');
 
@@ -150,18 +190,37 @@ module.exports = async function handler(req, res) {
     try { body = JSON.parse(body); } catch (e) { body = {}; }
   }
   const objecao = body && typeof body.objecao === 'string' ? body.objecao.trim() : '';
+  const audioBase64 = body && typeof body.audioBase64 === 'string' ? body.audioBase64 : '';
+  const audioMimeType = body && typeof body.audioMimeType === 'string' ? body.audioMimeType : '';
+  const ehAudio = !!audioBase64;
 
-  if (!objecao) {
-    res.status(400).json({ error: 'Envie { "objecao": "texto do cliente" } no corpo da requisição.' });
+  if (!ehAudio && !objecao) {
+    res.status(400).json({ error: 'Envie { "objecao": "texto do cliente" } (ou um áudio) no corpo da requisição.' });
     return;
   }
-  if (objecao.length > 1200) {
+  if (!ehAudio && objecao.length > 1200) {
     res.status(400).json({ error: 'Objeção muito longa. Cole só a parte relevante da mensagem do cliente.' });
+    return;
+  }
+  if (ehAudio && !audioMimeType) {
+    res.status(400).json({ error: 'Envie o tipo do áudio em "audioMimeType" (ex: "audio/ogg").' });
+    return;
+  }
+  // ~4MB em base64 já é um áudio de voz bem generoso (o WhatsApp comprime bastante);
+  // acima disso é bem provável que seja um arquivo errado ou vídeo, não voz.
+  if (ehAudio && audioBase64.length > 5_600_000) {
+    res.status(400).json({ error: 'Áudio muito grande. Envie um áudio de voz mais curto (até ~2 minutos).' });
     return;
   }
 
   const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
-  const prompt = montarPrompt(objecao);
+
+  const parts = ehAudio
+    ? [
+        { text: montarPromptAudio() },
+        { inlineData: { mimeType: audioMimeType, data: audioBase64 } }
+      ]
+    : [{ text: montarPrompt(objecao) }];
 
   try {
     const resposta = await fetch(
@@ -170,7 +229,7 @@ module.exports = async function handler(req, res) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
+          contents: [{ parts }],
           generationConfig: {
             temperature: 0.8,
             maxOutputTokens: 500,
@@ -194,7 +253,14 @@ module.exports = async function handler(req, res) {
       .trim();
 
     if (!texto) {
-      res.status(502).json({ error: 'O Gemini não retornou nenhum texto (pode ter sido bloqueado por segurança).' });
+      res.status(502).json({ error: 'O Gemini não retornou nenhum texto (pode ter sido bloqueado por segurança, ou não conseguiu entender o áudio).' });
+      return;
+    }
+
+    if (ehAudio) {
+      const { transcricao, resposta: respostaTexto } = separarTranscricaoResposta(texto);
+      registrarUso(sessao.email, 'responder', transcricao || '(áudio sem transcrição reconhecida)').catch(() => {});
+      res.status(200).json({ resposta: respostaTexto, transcricao });
       return;
     }
 
