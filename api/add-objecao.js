@@ -3,8 +3,8 @@
 // salva no banco compartilhado, pra virar uma entrada fixa da base pra todo
 // mundo (na categoria "Sugeridas pela IA"), sem precisar chamar a IA de novo.
 
-const { getPool, ensureTable, registrarUso } = require('./db');
-const { exigirSessao } = require('./auth');
+const { getPool, ensureTable, registrarUso } = require('../lib/db');
+const { exigirSessao } = require('../lib/auth');
 
 module.exports = async function handler(req, res){
   if (req.method !== 'POST') {
