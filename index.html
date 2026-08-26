@@ -351,14 +351,33 @@
     display:flex; align-items:center; gap:8px; flex-wrap:wrap;
     font-size:12px; color:rgba(255,255,255,0.55); margin-top:10px;
   }
-  .session-info button{
-    background:none; border:none; color:var(--orange); font-size:12px; cursor:pointer;
-    padding:0; text-decoration:underline; font-family:inherit;
+  /* Pílula base compartilhada pelos 3 itens (nome logado, ver uso, sair),
+     no mesmo estilo visual dos botões de áudio/categoria acima. */
+  .session-pill{
+    display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600;
+    padding:7px 14px; border-radius:999px; border:1px solid rgba(255,255,255,0.18);
+    background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.85);
+    font-family:inherit; line-height:1.2; white-space:nowrap;
   }
-  .session-info .painel-link{
-    color:rgba(255,255,255,0.55); font-size:12px; text-decoration:underline;
+  /* "Olá, Fulano" é só identificação, não é clicável — mesma pílula, sem
+     cursor de link e sem hover, pra não parecer botão morto. */
+  .session-pill.session-name{ cursor:default; }
+  /* "Ver uso da equipe" e "Sair" são ações de verdade: cursor de botão e
+     realce em laranja no hover/foco, igual aos outros botões do cabeçalho. */
+  a.session-pill, button.session-pill{
+    cursor:pointer; text-decoration:none; transition:all .15s;
   }
-  .session-info .painel-link:hover{ color:var(--orange); }
+  a.session-pill:hover, button.session-pill:hover{
+    border-color:var(--orange); color:#fff; transform:translateY(-1px);
+  }
+  a.session-pill:active, button.session-pill:active{ transform:translateY(0); }
+
+  @media (max-width:520px){
+    /* Em tela estreita as 3 pílulas quebram em até 2-3 linhas (flex-wrap já
+       cuida disso); só deixamos cada uma um pouco mais compacta pra caber
+       mais confortavelmente sem ficar apertado. */
+    .session-pill{ padding:7px 12px; font-size:12px; }
+  }
 </style>
 </head>
 <body>
@@ -1273,7 +1292,11 @@ function mostrarSessao(email, nome){
   const primeiroNome = (nome || '').trim().split(/\s+/)[0] || '';
   const saudacao = primeiroNome ? `Olá, ${primeiroNome}` : `Logado como ${email}`;
   sessionInfo.style.display = 'flex';
-  sessionInfo.innerHTML = `<span title="${escapeHtml(email)}">${escapeHtml(saudacao)}</span> <a href="painel.html" class="painel-link">Ver uso da equipe</a> <button type="button" id="logoutBtn">Sair</button>`;
+  sessionInfo.innerHTML = `
+    <span class="session-pill session-name" title="${escapeHtml(email)}">${escapeHtml(saudacao)}</span>
+    <a href="painel.html" class="session-pill">Ver uso da equipe</a>
+    <button type="button" class="session-pill" id="logoutBtn">Sair</button>
+  `;
   document.getElementById('logoutBtn').addEventListener('click', fazerLogout);
 }
 
