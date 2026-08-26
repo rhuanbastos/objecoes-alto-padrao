@@ -554,11 +554,22 @@ function scoreItem(queryTokens, queryNorm, item){
   if(!headerEl) return;
   let ticking = false;
   let isCompact = false;
+  let ultimaTrocaEm = 0;
+  // Duração da transição CSS (ver .25s nas regras acima) — nunca troca de
+  // novo antes da animação anterior ter tempo de terminar, mesmo que o
+  // scroll continue indo e voltando bem em cima do limite.
+  const TEMPO_MIN_ENTRE_TROCAS = 280;
   function updateCompact(){
-    // Zona de folga entre "liga" e "desliga" pra não ficar oscilando/tremendo
-    // quando o scroll para bem em cima do limite (ex: arrastando devagar).
-    if(!isCompact && window.scrollY > 48){ isCompact = true; }
-    else if(isCompact && window.scrollY < 16){ isCompact = false; }
+    const agora = performance.now();
+    // Zona de folga BEM larga entre "liga" e "desliga" — em trackpad (efeito
+    // "elástico" no topo da página, comum no Mac) o scrollY pode oscilar
+    // várias vezes por segundo perto do topo; uma folga estreita faz o
+    // cabeçalho tremer, trocando de estado a cada oscilação.
+    if(!isCompact && window.scrollY > 120){
+      if(agora - ultimaTrocaEm > TEMPO_MIN_ENTRE_TROCAS){ isCompact = true; ultimaTrocaEm = agora; }
+    } else if(isCompact && window.scrollY < 24){
+      if(agora - ultimaTrocaEm > TEMPO_MIN_ENTRE_TROCAS){ isCompact = false; ultimaTrocaEm = agora; }
+    }
     headerEl.classList.toggle('compact', isCompact);
     ticking = false;
   }
