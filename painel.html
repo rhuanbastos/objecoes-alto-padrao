@@ -73,6 +73,50 @@
     display:inline-block; padding:2px 9px; border-radius:999px; font-size:11.5px; font-weight:700;
     background:var(--orange-soft); color:var(--orange-deep);
   }
+
+  /* ---------- Dashboard: tiles + ranking ---------- */
+  .tiles{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:22px;
+  }
+  @media (max-width:720px){ .tiles{ grid-template-columns:repeat(2, 1fr); } }
+  .tile{
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 20px;
+  }
+  .tile .tile-label{
+    font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em;
+    font-weight:600; margin-bottom:8px;
+  }
+  .tile .tile-value{
+    font-size:28px; font-weight:700; color:var(--ink); line-height:1.1;
+  }
+  .tile .tile-value small{ font-size:14px; font-weight:600; color:var(--muted-2); }
+
+  .rank-sub{ font-size:13px; color:var(--muted); margin:-6px 0 16px; }
+  .rank-row{ display:flex; align-items:center; gap:12px; padding:7px 0; }
+  .rank-nome{
+    flex:0 0 168px; font-size:13.5px; color:var(--ink); font-weight:600;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .rank-bar-wrap{ flex:1 1 auto; display:flex; align-items:center; gap:10px; min-width:0; }
+  .rank-bar-track{ flex:1 1 auto; height:24px; position:relative; }
+  .rank-bar{
+    position:absolute; left:0; top:0; height:24px; min-width:4px;
+    background:var(--orange); border-radius:0 4px 4px 0;
+    transition:filter .12s ease;
+  }
+  .rank-bar:hover{ filter:brightness(0.92); }
+  .rank-valor{
+    flex:0 0 auto; min-width:26px; font-size:13.5px; font-weight:700; color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .rank-nota{ font-size:12.5px; color:var(--muted-2); margin-top:6px; }
+  .viz-tooltip{
+    position:fixed; z-index:50; pointer-events:none; background:var(--navy-deep); color:#fff;
+    font-size:12.5px; line-height:1.5; padding:9px 12px; border-radius:8px; box-shadow:var(--shadow, 0 8px 24px -12px rgba(0,0,0,.35));
+    display:none; max-width:240px;
+  }
+  .viz-tooltip b{ color:var(--orange); }
 </style>
 </head>
 <body>
@@ -99,12 +143,42 @@
   </div>
 
   <div id="resultados" style="display:none;">
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card">
+      <h2>Ranking por respostas geradas</h2>
+      <p class="rank-sub">Quem mais pediu resposta pronta pra objeção, do maior pro menor.</p>
+      <div id="rankWrap"></div>
+      <div class="vazio" id="vazioRanking" style="display:none;">Ainda não há uso registrado.</div>
+      <div class="rank-nota" id="rankNota" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Objeções que a base local não resolveu sozinha</h2>
+      <p class="rank-sub">Perguntas que caíram no fallback de IA (não bateram forte com nada na base fixa). Ajuda o marketing a saber o que falta escrever.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Objeção</th>
+              <th class="num">Vezes</th>
+              <th>Última vez</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaSemMatch"></tbody>
+        </table>
+      </div>
+      <div class="vazio" id="vazioSemMatch" style="display:none;">Nenhuma objeção caiu no fallback de IA ainda — a base local está dando conta sozinha.</div>
+    </div>
+
     <div class="card">
       <h2>Uso por pessoa</h2>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
+              <th>Nome</th>
               <th>E-mail</th>
               <th class="num">Respostas geradas</th>
               <th class="num">Objeções adicionadas</th>
@@ -168,13 +242,129 @@ function formatarData(iso){
   return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit' });
 }
 
+// Tooltip único, compartilhado por todas as barras do ranking.
+const tooltip = document.createElement('div');
+tooltip.className = 'viz-tooltip';
+document.body.appendChild(tooltip);
+function mostrarTooltip(evt, html){
+  tooltip.innerHTML = html;
+  tooltip.style.display = 'block';
+  const margem = 14;
+  let x = evt.clientX + margem;
+  let y = evt.clientY + margem;
+  const rect = tooltip.getBoundingClientRect();
+  if(x + rect.width > window.innerWidth - 8) x = evt.clientX - rect.width - margem;
+  if(y + rect.height > window.innerHeight - 8) y = evt.clientY - rect.height - margem;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+function esconderTooltip(){ tooltip.style.display = 'none'; }
+
+function pintarTiles(porUsuario){
+  const totalRespostas = porUsuario.reduce((s, u) => s + (Number(u.respostas) || 0), 0);
+  const totalObjecoes = porUsuario.reduce((s, u) => s + (Number(u.objecoes_adicionadas) || 0), 0);
+  const totalLogins = porUsuario.reduce((s, u) => s + (Number(u.logins) || 0), 0);
+  const pessoasAtivas = porUsuario.length;
+
+  const tiles = [
+    { label: 'Respostas geradas', value: totalRespostas },
+    { label: 'Objeções adicionadas', value: totalObjecoes },
+    { label: 'Logins no total', value: totalLogins },
+    { label: 'Pessoas ativas', value: pessoasAtivas }
+  ];
+  document.getElementById('tiles').innerHTML = tiles.map(t => `
+    <div class="tile">
+      <div class="tile-label">${escapeHtml(t.label)}</div>
+      <div class="tile-value">${escapeHtml(t.value)}</div>
+    </div>
+  `).join('');
+}
+
+function nomeDoEmail(email){
+  const parte = String(email || '').split('@')[0] || '';
+  return parte.replace(/[._]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || email;
+}
+
+// Nome real (capturado no login pelo Google) quando existir; senão, um nome
+// aproximado a partir do e-mail (pra quem nunca logou depois dessa mudança).
+function nomeExibicao(u){
+  return (u && u.nome && String(u.nome).trim()) || nomeDoEmail(u && u.email);
+}
+
+function pintarRanking(porUsuario){
+  const wrap = document.getElementById('rankWrap');
+  const vazio = document.getElementById('vazioRanking');
+  const nota = document.getElementById('rankNota');
+
+  const ordenado = porUsuario
+    .filter(u => (Number(u.respostas) || 0) > 0)
+    .sort((a, b) => (Number(b.respostas) || 0) - (Number(a.respostas) || 0));
+
+  if(!ordenado.length){
+    wrap.innerHTML = '';
+    vazio.style.display = 'block';
+    nota.style.display = 'none';
+    return;
+  }
+  vazio.style.display = 'none';
+
+  const LIMITE = 8;
+  const visiveis = ordenado.slice(0, LIMITE);
+  const max = Number(visiveis[0].respostas) || 1;
+
+  wrap.innerHTML = visiveis.map(u => {
+    const valor = Number(u.respostas) || 0;
+    const largura = Math.max(4, Math.round((valor / max) * 100));
+    const tip = `<b>${escapeHtml(u.email)}</b><br>${valor} resposta${valor === 1 ? '' : 's'} geradas<br>${Number(u.objecoes_adicionadas) || 0} objeções adicionadas<br>${Number(u.logins) || 0} logins · último acesso ${escapeHtml(formatarData(u.ultimo_acesso))}`;
+    return `
+      <div class="rank-row" data-tip="${escapeHtml(tip)}">
+        <div class="rank-nome" title="${escapeHtml(u.email)}">${escapeHtml(nomeExibicao(u))}</div>
+        <div class="rank-bar-wrap">
+          <div class="rank-bar-track"><div class="rank-bar" style="width:${largura}%"></div></div>
+          <div class="rank-valor">${valor}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  wrap.querySelectorAll('.rank-row').forEach(row => {
+    row.addEventListener('mousemove', (e) => mostrarTooltip(e, row.dataset.tip));
+    row.addEventListener('mouseleave', esconderTooltip);
+  });
+
+  if(ordenado.length > LIMITE){
+    nota.style.display = 'block';
+    nota.textContent = `+${ordenado.length - LIMITE} pessoa${ordenado.length - LIMITE === 1 ? '' : 's'} com menos atividade — veja a tabela completa abaixo.`;
+  } else {
+    nota.style.display = 'none';
+  }
+}
+
+function pintarSemMatch(semMatch){
+  const tbody = document.getElementById('tabelaSemMatch');
+  tbody.innerHTML = semMatch.map(item => `
+    <tr>
+      <td class="detalhe-cel" style="max-width:460px;" title="${escapeHtml(item.exemplo || '')}">${escapeHtml(item.exemplo || '—')}</td>
+      <td class="num">${escapeHtml(item.vezes || 0)}</td>
+      <td>${formatarData(item.ultima)}</td>
+    </tr>
+  `).join('');
+  document.getElementById('vazioSemMatch').style.display = semMatch.length ? 'none' : 'block';
+}
+
 function pintarResultados(dados){
   const porUsuario = Array.isArray(dados.porUsuario) ? dados.porUsuario : [];
   const recentes = Array.isArray(dados.recentes) ? dados.recentes : [];
+  const semMatch = Array.isArray(dados.semMatch) ? dados.semMatch : [];
+
+  pintarTiles(porUsuario);
+  pintarRanking(porUsuario);
+  pintarSemMatch(semMatch);
 
   const tbodyU = document.getElementById('tabelaUsuarios');
   tbodyU.innerHTML = porUsuario.map(u => `
     <tr>
+      <td>${escapeHtml(nomeExibicao(u))}</td>
       <td>${escapeHtml(u.email)}</td>
       <td class="num">${escapeHtml(u.respostas || 0)}</td>
       <td class="num">${escapeHtml(u.objecoes_adicionadas || 0)}</td>
