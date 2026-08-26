@@ -102,4 +102,293 @@ REGRAS DE TOM (siga à risca):
 - NUNCA invente número, taxa, percentual, prazo ou dado específico. Se o dado estiver no CONTEXTO DE MERCADO abaixo (dado geral de mercado/região), cite ele DIRETO na resposta, já mastigado para o SDR. Só diga que vai buscar/mandar depois quando for um dado específico de um imóvel, cliente ou condomínio que não está no contexto.
 - VOCÊ (SDR) NUNCA negocia preço, desconto ou condição de pagamento com a construtora, e NUNCA promete "levar uma proposta" ou "ver o que dá pra ajustar" sozinho. Isso é sempre função do closer/especialista. O papel do SDR é agendar uma reunião/call do lead com o closer. Quando a objeção for sobre negociar preço, desconto ou condição de pagamento de um imóvel específico, sua resposta deve acolher a dúvida e oferecer agendar essa conversa com o closer (ex: "posso já agendar uma conversa com nosso closer pra vocês verem os números certinho?"), nunca tentar resolver ou prometer condição sozinho.
 - Sempre feche com um próximo passo claro ou uma pergunta que mantenha a conversa andando.
-- Não repita a objeção do cliente de volta
+- Não repita a objeção do cliente de volta como se fosse um resumo ("Entendo que você quer..."). Vá direto pra resposta.
+- Contexto do negócio: imóveis de alto padrão, clientes de alta renda, decisões que costumam envolver due diligence (advogados, family offices, cônjuges), preocupação real com discrição e reputação.
+- Devolva SOMENTE o texto da resposta, pronto pra colar. Nada de aspas, nada de "Resposta:", nada de comentário extra.`;
+
+function montarPrompt(objecaoCliente){
+  const exemplosTexto = EXEMPLOS
+    .map(ex => `Objeção: "${ex.objecao}"\nResposta: ${ex.resposta}`)
+    .join('\n\n---\n\n');
+
+  return `${REGRAS_DE_TOM}
+
+${CONTEXTO_REGIAO}
+
+EXEMPLOS DO NOSSO TOM (responda sempre nesse estilo, mesmo para objeções diferentes destas):
+
+${exemplosTexto}
+
+---
+
+Agora responda, no mesmo estilo dos exemplos acima, usando o contexto de mercado quando fizer sentido, a objeção abaixo:
+
+Objeção: "${objecaoCliente}"
+Resposta:`;
+}
+
+// Mesma lógica do montarPrompt, mas pro caso de áudio: em vez de já receber o texto
+// da objeção, o SDR manda o áudio (print de voz do WhatsApp) e o Gemini primeiro
+// transcreve, depois responde. Pedimos os dois num formato com marcador fixo
+// (TRANSCRICAO: / RESPOSTA:) pra dar pra separar depois com regex no servidor.
+function montarPromptAudio(){
+  const exemplosTexto = EXEMPLOS
+    .map(ex => `Objeção: "${ex.objecao}"\nResposta: ${ex.resposta}`)
+    .join('\n\n---\n\n');
+
+  return `${REGRAS_DE_TOM}
+
+${CONTEXTO_REGIAO}
+
+EXEMPLOS DO NOSSO TOM (responda sempre nesse estilo, mesmo para objeções diferentes destas):
+
+${exemplosTexto}
+
+---
+
+Agora ouça o áudio anexado (é um print de voz que um cliente mandou pro SDR pelo WhatsApp, com uma objeção sobre comprar imóvel). Faça duas coisas, nessa ordem, EXATAMENTE no formato abaixo, sem nenhum texto antes ou depois:
+
+TRANSCRICAO: <transcreva o áudio literalmente, palavra por palavra, em português. Se tiver algum trecho inaudível, marque como (inaudível) nesse trecho, mas transcreva o resto normalmente.>
+RESPOSTA: <no mesmo estilo dos exemplos acima e seguindo as regras de tom à risca, a resposta pronta pra colar no WhatsApp para a objeção que você ouviu no áudio>`;
+}
+
+// Separa o texto bruto que o Gemini devolveu em { transcricao, resposta } usando os
+// marcadores acima. Se por algum motivo o modelo não usar o formato (acontece raramente
+// com modelo de IA), cai num fallback: sem transcrição, e o texto inteiro vira a resposta,
+// pra nunca deixar o SDR sem nada na tela.
+function separarTranscricaoResposta(textoBruto){
+  const match = textoBruto.match(/TRANSCRI[ÇC][ÃA]O:\s*([\s\S]*?)\n\s*RESPOSTA:\s*([\s\S]*)/i);
+  if (match) {
+    return {
+      transcricao: match[1].trim(),
+      resposta: match[2].trim()
+    };
+  }
+  return { transcricao: '', resposta: textoBruto.trim() };
+}
+
+// ---------- Cache de objeção repetida ----------
+// Quando a mesma objeção (ou uma bem parecida) é colada de novo no mesmo dia,
+// reaproveita a resposta já gerada em vez de chamar o Gemini de novo. Só se
+// aplica ao fluxo de texto (áudio sempre gera na hora, porque cachear exigiria
+// comparar áudio contra áudio, o que não vale a pena pro volume dessa ferramenta).
+
+function normalizarTextoCache(s){
+  return (s || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function tokenizarObjecaoCache(s){
+  return normalizarTextoCache(s).split(' ').filter(t => t.length > 2);
+}
+
+// Similaridade de Jaccard: proporção de palavras em comum entre as duas objeções,
+// sobre o total de palavras diferentes das duas juntas. 1.0 = mesmas palavras,
+// 0 = nenhuma em comum. Simples e rápido o suficiente pro volume de objeções/dia.
+function similaridadeJaccard(tokensA, tokensB){
+  const setA = new Set(tokensA);
+  const setB = new Set(tokensB);
+  if (!setA.size || !setB.size) return 0;
+  let intersecao = 0;
+  setA.forEach(t => { if (setB.has(t)) intersecao++; });
+  const uniao = setA.size + setB.size - intersecao;
+  return uniao === 0 ? 0 : intersecao / uniao;
+}
+
+// Limiares pra considerar "a mesma objeção, bem parecida": exige similaridade
+// alta E um número mínimo de palavras em comum, pra uma objeção curta não
+// "colar" por acidente numa objeção maior só por ter 1-2 palavras batendo.
+const CACHE_SIMILARIDADE_MIN = 0.78;
+const CACHE_PALAVRAS_COMUNS_MIN = 3;
+
+function encontrarNoCache(tokensQuery, cacheRows){
+  let melhor = null;
+  let melhorSim = 0;
+  for (const row of cacheRows) {
+    const tokensCache = (row.tokens || '').split(' ').filter(Boolean);
+    const sim = similaridadeJaccard(tokensQuery, tokensCache);
+    if (sim > melhorSim) { melhorSim = sim; melhor = { row, tokensCache }; }
+  }
+  if (!melhor) return null;
+  const comuns = tokensQuery.filter(t => melhor.tokensCache.includes(t)).length;
+  if (melhorSim >= CACHE_SIMILARIDADE_MIN && comuns >= CACHE_PALAVRAS_COMUNS_MIN) {
+    return melhor.row.resposta;
+  }
+  return null;
+}
+
+// ---------- Chamada ao Gemini, com uma nova tentativa automática ----------
+// O Gemini às vezes falha por instabilidade passageira (rede, timeout, erro
+// 5xx momentâneo) sem ter nada a ver com o prompt em si. Em vez de devolver
+// erro pro SDR de cara, tenta de novo uma vez, com uma pausa curta, antes de
+// desistir. Isso cobre a maioria das falhas transitórias sem o SDR precisar
+// clicar em nada de novo.
+
+function pausar(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Faz uma tentativa de chamada ao Gemini. Devolve { texto } em caso de sucesso,
+// ou { falhaTransitoria, erro } em caso de falha (pra quem chamou decidir se
+// vale a pena tentar de novo).
+async function chamarGeminiUmaVez(model, apiKey, parts){
+  try {
+    const resposta = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 500,
+            thinkingConfig: { thinkingBudget: 0 }
+          }
+        })
+      }
+    );
+
+    if (!resposta.ok) {
+      const detalhe = await resposta.text();
+      // Erro do lado do Gemini (instabilidade, sobrecarga, timeout deles) vale
+      // tentar de novo. Erro claramente de configuração (ex: chave inválida,
+      // 400 de request malformado) não muda numa segunda tentativa.
+      const falhaTransitoria = resposta.status >= 500 || resposta.status === 429;
+      return { falhaTransitoria, erro: { status: 502, mensagem: 'O Gemini recusou a requisição.', detalhe } };
+    }
+
+    const dados = await resposta.json();
+    const texto = (dados && dados.candidates && dados.candidates[0] && dados.candidates[0].content &&
+      dados.candidates[0].content.parts || [])
+      .map(p => p.text || '')
+      .join('')
+      .trim();
+
+    if (!texto) {
+      return {
+        falhaTransitoria: true, // pode ter sido um "engasgo" pontual do modelo, vale tentar de novo
+        erro: { status: 502, mensagem: 'O Gemini não retornou nenhum texto (pode ter sido bloqueado por segurança, ou não conseguiu entender o áudio).' }
+      };
+    }
+
+    return { texto };
+  } catch (err) {
+    // Erro de rede/conexão: sempre vale tentar de novo.
+    return { falhaTransitoria: true, erro: { status: 500, mensagem: 'Falha ao conectar com o Gemini.', detalhe: String(err && err.message || err) } };
+  }
+}
+
+async function chamarGeminiComRetry(model, apiKey, parts){
+  const primeira = await chamarGeminiUmaVez(model, apiKey, parts);
+  if (primeira.texto) return { texto: primeira.texto };
+  if (!primeira.falhaTransitoria) return { erro: primeira.erro };
+
+  await pausar(700);
+  const segunda = await chamarGeminiUmaVez(model, apiKey, parts);
+  if (segunda.texto) return { texto: segunda.texto };
+  return { erro: segunda.erro };
+}
+
+const { exigirSessao } = require('../lib/auth');
+const { registrarUso, buscarRespostasCacheDeHoje, salvarRespostaCache } = require('../lib/db');
+
+module.exports = async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Use POST.' });
+    return;
+  }
+
+  const sessao = exigirSessao(req, res);
+  if(!sessao) return;
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    res.status(500).json({ error: 'GEMINI_API_KEY não configurada no servidor. Configure em Project Settings > Environment Variables na Vercel.' });
+    return;
+  }
+
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch (e) { body = {}; }
+  }
+  const objecao = body && typeof body.objecao === 'string' ? body.objecao.trim() : '';
+  const audioBase64 = body && typeof body.audioBase64 === 'string' ? body.audioBase64 : '';
+  const audioMimeType = body && typeof body.audioMimeType === 'string' ? body.audioMimeType : '';
+  const ehAudio = !!audioBase64;
+
+  if (!ehAudio && !objecao) {
+    res.status(400).json({ error: 'Envie { "objecao": "texto do cliente" } (ou um áudio) no corpo da requisição.' });
+    return;
+  }
+  if (!ehAudio && objecao.length > 1200) {
+    res.status(400).json({ error: 'Objeção muito longa. Cole só a parte relevante da mensagem do cliente.' });
+    return;
+  }
+  if (ehAudio && !audioMimeType) {
+    res.status(400).json({ error: 'Envie o tipo do áudio em "audioMimeType" (ex: "audio/ogg").' });
+    return;
+  }
+  // ~4MB em base64 já é um áudio de voz bem generoso (o WhatsApp comprime bastante);
+  // acima disso é bem provável que seja um arquivo errado ou vídeo, não voz.
+  if (ehAudio && audioBase64.length > 5_600_000) {
+    res.status(400).json({ error: 'Áudio muito grande. Envie um áudio de voz mais curto (até ~2 minutos).' });
+    return;
+  }
+
+  // Cache: só pro fluxo de texto (áudio sempre é gerado na hora). Se achar uma
+  // objeção igual ou bem parecida já respondida hoje, devolve na hora, sem
+  // gastar chamada de Gemini. Blindado em try/catch de propósito: se algo do
+  // cache falhar (banco fora do ar, lib desatualizada, etc.), a ferramenta
+  // nunca pode travar por causa disso — só ignora o cache e segue pro Gemini
+  // normalmente, como se o cache nem existisse.
+  const tokensQuery = ehAudio ? [] : tokenizarObjecaoCache(objecao);
+  if (!ehAudio && tokensQuery.length >= 2) {
+    try {
+      const cacheRows = await buscarRespostasCacheDeHoje();
+      const respostaCacheada = encontrarNoCache(tokensQuery, cacheRows);
+      if (respostaCacheada) {
+        registrarUso(sessao.email, 'responder', `[cache] ${objecao}`).catch(() => {});
+        res.status(200).json({ resposta: respostaCacheada, cache: true });
+        return;
+      }
+    } catch (err) {
+      // Segue pro Gemini normalmente, sem cache dessa vez.
+    }
+  }
+
+  const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
+
+  const parts = ehAudio
+    ? [
+        { text: montarPromptAudio() },
+        { inlineData: { mimeType: audioMimeType, data: audioBase64 } }
+      ]
+    : [{ text: montarPrompt(objecao) }];
+
+  try {
+    const { texto, erro } = await chamarGeminiComRetry(model, apiKey, parts);
+
+    if (erro) {
+      res.status(erro.status).json({ error: erro.mensagem, detalhe: erro.detalhe });
+      return;
+    }
+
+    if (ehAudio) {
+      const { transcricao, resposta: respostaTexto } = separarTranscricaoResposta(texto);
+      registrarUso(sessao.email, 'responder', transcricao || '(áudio sem transcrição reconhecida)').catch(() => {});
+      res.status(200).json({ resposta: respostaTexto, transcricao });
+      return;
+    }
+
+    registrarUso(sessao.email, 'responder', objecao).catch(() => {});
+    salvarRespostaCache(tokensQuery, objecao, texto).catch(() => {});
+    res.status(200).json({ resposta: texto });
+  } catch (err) {
+    res.status(500).json({ error: 'Falha ao conectar com o Gemini.', detalhe: String(err && err.message || err) });
+  }
+};
