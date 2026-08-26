@@ -443,8 +443,54 @@ function normalize(s){
     .replace(/\s+/g,' ')
     .trim();
 }
+
+// Abreviações e gírias comuns de WhatsApp/mercado imobiliário que o SDR cola
+// direto da conversa com o cliente. Mapeia pra forma "cheia" antes de comparar
+// com a base, assim "apto" bate igual a "apartamento" (não é erro de digitação,
+// é abreviação mesmo, então fica separado da tolerância a erro de digitação
+// mais abaixo).
+const SINONIMOS = {
+  'apto':'apartamento','ap':'apartamento','apts':'apartamento','aps':'apartamento',
+  'condo':'condominio','cond':'condominio',
+  'financ':'financiamento','financiamentos':'financiamento',
+  'pgto':'pagamento','pgtos':'pagamento',
+  'vlr':'valor','vlrs':'valor',
+  'imob':'imobiliaria',
+  'tb':'tambem','tbm':'tambem',
+  'pq':'porque','pq':'porque',
+  'qto':'quanto','qnt':'quanto','qtos':'quanto',
+  'obg':'obrigado',
+  'blz':'beleza'
+};
+
 function tokenize(s){
-  return normalize(s).split(' ').filter(t => t.length > 1 && !STOPWORDS.has(t));
+  return normalize(s).split(' ')
+    .filter(t => t.length > 1)
+    .map(t => SINONIMOS[t] || t)
+    .filter(t => !STOPWORDS.has(t));
+}
+
+// Distância de Levenshtein: quantas trocas/inserções/remoções de letra separam
+// duas palavras. Usada pra pegar erro de digitação real (ex: "apartametno",
+// "financimento"), diferente de abreviação (isso já é tratado acima) ou de
+// plural/singular (isso já é pego pelo match por substring no scoreItem).
+function levenshtein(a, b){
+  if(a === b) return 0;
+  const al = a.length, bl = b.length;
+  if(al === 0) return bl;
+  if(bl === 0) return al;
+  let prev = new Array(bl + 1);
+  let curr = new Array(bl + 1);
+  for(let j = 0; j <= bl; j++) prev[j] = j;
+  for(let i = 1; i <= al; i++){
+    curr[0] = i;
+    for(let j = 1; j <= bl; j++){
+      const custo = a[i-1] === b[j-1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j-1] + 1, prev[j-1] + custo);
+    }
+    [prev, curr] = [curr, prev];
+  }
+  return prev[bl];
 }
 function buildWeights(item){
   const w = {};
@@ -468,6 +514,15 @@ function prepareItem(item){
 }
 DATA.forEach(prepareItem);
 
+// Quantas trocas de letra ainda contam como "mesma palavra, só digitada errado",
+// proporcional ao tamanho da palavra (palavra curta tolera menos erro, senão
+// vira palavra completamente diferente sem querer).
+function distanciaMaximaTolerada(len){
+  if(len <= 5) return 1;
+  if(len <= 9) return 2;
+  return 3;
+}
+
 function scoreItem(queryTokens, queryNorm, item){
   let score = 0;
   queryTokens.forEach(qt => {
@@ -476,6 +531,15 @@ function scoreItem(queryTokens, queryNorm, item){
     for(const key in item._weights){
       if(qt.length >= 4 && (key.includes(qt) || qt.includes(key))){
         partial = Math.max(partial, item._weights[key] * 0.5);
+        continue;
+      }
+      // Erro de digitação: só vale a pena calcular a distância se os tamanhos
+      // das palavras já forem parecidos (evita comparar "casa" com "financiamento").
+      if(qt.length >= 4 && Math.abs(key.length - qt.length) <= 2){
+        const maxDist = distanciaMaximaTolerada(qt.length);
+        if(levenshtein(qt, key) <= maxDist){
+          partial = Math.max(partial, item._weights[key] * 0.4);
+        }
       }
     }
     score += partial;
