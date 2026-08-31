@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quebra de Objeções · Alto Padrão</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,500&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
@@ -28,6 +28,8 @@
     --border:#e4e2df;
     --shadow: 0 1px 2px rgba(0,0,0,0.05), 0 8px 24px -12px rgba(0,0,0,0.22);
     --radius: 14px;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --surface-warm: #fbf9f6;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -51,6 +53,16 @@
   }
   .fade-in{animation:fadeSlideIn .32s cubic-bezier(.2,.7,.3,1) both;}
 
+  /* Entrada coreografada do cabeçalho, disparada só depois do login (ver
+     animarEntradaHero() no JS) — cada elemento some/aparece em sequência em
+     vez de tudo de uma vez, e a linha do "kicker" desenha de cima pra baixo. */
+  @keyframes heroFadeUp{
+    from{opacity:0; transform:translateY(12px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  .hero-anim{animation:heroFadeUp .65s cubic-bezier(.2,.7,.2,1) both paused;}
+  .kicker-line.pre-reveal{height:0 !important;}
+
   /* Header: masthead escuro, na paleta Águia */
   header.top{
     position:sticky; top:0; z-index:20;
@@ -61,74 +73,84 @@
   }
   .header-inner{max-width:1180px; margin:0 auto;}
 
-  .brand-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:26px; transition:margin-bottom .25s ease;}
-  .brand-logo{height:34px; width:auto; display:block; transition:height .25s ease;}
+  .brand-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:40px; transition:margin-bottom .25s ease;}
+  .brand-logo{height:30px; width:auto; display:block; transition:height .25s ease;}
+
+  .hero-grid{display:grid; grid-template-columns:130px 1fr; gap:0;}
+  .hero-kicker{padding-top:6px;}
 
   .eyebrow{
-    text-transform:uppercase; letter-spacing:.16em; font-size:11px; font-weight:600;
-    color:var(--orange); margin-bottom:8px;
+    text-transform:none; letter-spacing:.1em; font-size:10.5px; font-weight:500;
+    color:rgba(255,255,255,0.4); margin-bottom:0;
     max-height:40px; opacity:1; overflow:hidden;
     transition:max-height .25s ease, opacity .2s ease, margin-bottom .25s ease;
   }
+  .kicker-line{
+    width:1px; height:56px; margin-top:16px;
+    background:linear-gradient(var(--orange), transparent);
+    transition:height .8s cubic-bezier(.2,.7,.2,1), margin-top .25s ease;
+  }
   h1{
-    font-family:'Montserrat', sans-serif;
-    font-weight:300; font-size:32px; margin:0 0 8px; color:#fff;
-    letter-spacing:-0.01em;
-    transition:font-size .25s ease;
+    font-family:var(--serif); font-weight:400; font-size:42px; margin:0 0 14px; color:#fff;
+    letter-spacing:0; line-height:1.12; max-width:600px;
+    transition:font-size .25s ease, margin-bottom .25s ease;
   }
   .subtitle{
-    color:rgba(255,255,255,0.68); font-size:14.5px; margin:0 0 18px; max-width:680px; line-height:1.6; font-weight:300;
+    color:rgba(255,255,255,0.44); font-size:13.5px; margin:0 0 30px; max-width:520px; line-height:1.7; font-weight:300;
     max-height:120px; opacity:1; overflow:hidden;
     transition:max-height .25s ease, opacity .2s ease, margin-bottom .25s ease;
   }
 
-  .controls{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+  .controls{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;}
   .search-wrap{
     position:relative; flex:1 1 320px; min-width:260px;
   }
   .search-wrap input{
-    width:100%; padding:13px 44px 13px 42px; border-radius:11px;
-    border:1.5px solid transparent; background:var(--surface);
-    font-size:15px; font-family:inherit; color:var(--ink);
-    outline:none; transition:border-color .15s, box-shadow .15s;
+    width:100%; padding:12px 40px 12px 28px; border-radius:0;
+    border:none; border-bottom:1.5px solid rgba(255,255,255,0.22); background:transparent;
+    font-size:15.5px; font-family:inherit; color:#fff;
+    outline:none; transition:border-color .15s;
   }
-  .search-wrap input:focus{border-color:var(--orange); box-shadow:0 0 0 4px rgba(242,144,28,0.28);}
+  .search-wrap input::placeholder{
+    color:rgba(255,255,255,0.32); font-family:var(--serif); font-style:italic; font-weight:400; font-size:16.5px;
+  }
+  .search-wrap input:focus{border-color:var(--orange);}
   .search-icon{
-    position:absolute; left:14px; top:50%; transform:translateY(-50%);
-    color:var(--muted-2); pointer-events:none; transition:color .15s;
+    position:absolute; left:2px; top:50%; transform:translateY(-50%);
+    color:rgba(255,255,255,0.38); pointer-events:none; transition:color .15s;
   }
-  .search-wrap.has-value .search-icon{color:var(--orange-deep);}
-  .search-wrap input:focus + .search-icon{color:var(--orange-deep);}
+  .search-wrap.has-value .search-icon{color:var(--orange);}
+  .search-wrap input:focus + .search-icon{color:var(--orange);}
   .clear-btn{
-    position:absolute; right:8px; top:50%; transform:translateY(-50%);
-    width:26px; height:26px; border-radius:50%; border:none; background:var(--surface-alt);
-    color:var(--muted); cursor:pointer; display:none; align-items:center; justify-content:center;
+    position:absolute; right:2px; top:50%; transform:translateY(-50%);
+    width:24px; height:24px; border-radius:50%; border:none; background:rgba(255,255,255,0.1);
+    color:rgba(255,255,255,0.7); cursor:pointer; display:none; align-items:center; justify-content:center;
     font-size:15px; line-height:1;
   }
-  .clear-btn:hover{background:var(--orange-soft); color:var(--orange-deep);}
+  .clear-btn:hover{background:rgba(255,255,255,0.18); color:#fff;}
   .search-wrap.has-value .clear-btn{display:flex;}
 
   .stat-pill{
-    font-size:12.5px; color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
-    padding:9px 14px; border-radius:10px; white-space:nowrap;
+    font-size:11.5px; color:rgba(255,255,255,0.5); background:none; border:none;
+    padding:0 0 13px; white-space:nowrap; letter-spacing:.02em;
   }
-  .stat-pill strong{color:#fff; font-weight:600;}
+  .stat-pill strong{color:rgba(255,255,255,0.85); font-weight:500;}
 
   .hint-row{
-    font-size:12px; color:rgba(255,255,255,0.5); margin-top:9px;
+    font-size:11.5px; color:rgba(255,255,255,0.32); margin-top:12px; font-weight:300;
     max-height:30px; opacity:1; overflow:hidden;
     transition:max-height .25s ease, opacity .2s ease, margin-top .25s ease;
   }
   .hint-row kbd{
-    background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.2); border-radius:4px;
-    padding:1px 6px; font-family:inherit; font-size:11px; color:#fff;
+    background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.18); border-radius:4px;
+    padding:1px 6px; font-family:inherit; font-size:10.5px; color:rgba(255,255,255,0.7);
   }
 
-  .audio-actions{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:12px;}
+  .audio-actions{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:16px;}
   .audio-btn{
-    display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600;
-    padding:8px 15px; border-radius:999px; border:1px solid rgba(255,255,255,0.2);
-    background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.85); cursor:pointer; transition:all .15s;
+    display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:500;
+    padding:7px 14px; border-radius:999px; border:1px solid rgba(255,255,255,0.14);
+    background:none; color:rgba(255,255,255,0.55); cursor:pointer; transition:all .15s;
   }
   .audio-btn:hover{border-color:var(--orange); color:#fff; transform:translateY(-1px);}
   .audio-btn:active{transform:translateY(0);}
@@ -165,15 +187,20 @@
 
   /* Match callout */
   .match-callout{
-    background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--accent);
-    border-radius:var(--radius); box-shadow:var(--shadow); padding:22px 24px; margin-bottom:24px;
+    background:var(--surface-warm); border:1px solid var(--border); border-left:2px solid var(--accent);
+    border-radius:var(--radius); box-shadow:var(--shadow); padding:26px 28px; margin-bottom:24px;
     animation:popIn .3s cubic-bezier(.2,.7,.3,1) both;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .match-callout:hover{
+    transform:translateY(-2px);
+    box-shadow:0 4px 8px rgba(0,0,0,0.04), 0 16px 32px -14px rgba(0,0,0,0.28);
   }
   .match-callout-label{
-    display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; text-transform:uppercase;
-    letter-spacing:.06em; color:var(--accent-deep); margin-bottom:12px;
+    display:flex; align-items:center; gap:7px; font-size:10.5px; font-weight:500;
+    letter-spacing:.1em; color:#b3ab9e; margin-bottom:16px;
   }
-  .match-callout-label svg{flex-shrink:0;}
+  .match-callout-label svg{flex-shrink:0; opacity:.7;}
 
   /* Resposta montada na hora (fallback de IA, quando não tem nada parecido na base) */
   .ai-spinner{
@@ -187,9 +214,18 @@
     line-height:1.5;
   }
 
+  /* Cursor piscando enquanto a resposta da IA "se escreve" na tela (ver
+     tipografarResposta() no JS) — só usado na resposta gerada pela IA, não
+     nas respostas prontas da base (essas aparecem instantâneas, sem efeito). */
+  .script-box.digitando::after{
+    content:''; display:inline-block; width:2px; height:14px; margin-left:2px;
+    background:var(--ink); vertical-align:-2px; animation:caretBlink .8s step-end infinite;
+  }
+  @keyframes caretBlink{ 50%{opacity:0;} }
+
   .match-quote{
-    font-family:'Montserrat', sans-serif; font-weight:500;
-    font-size:20px; line-height:1.35; margin:0 0 14px; color:var(--navy); letter-spacing:-0.01em;
+    font-family:var(--serif); font-style:italic; font-weight:500;
+    font-size:23px; line-height:1.4; margin:0 0 18px; color:var(--ink); letter-spacing:0;
   }
   .match-alts{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border);}
   .match-alts-label{font-size:12px; color:var(--muted-2); width:100%; margin-bottom:2px;}
@@ -201,16 +237,22 @@
 
   /* Botão pra pedir a resposta da IA mesmo já tendo um match "forte" na base
      (a busca por palavra-chave às vezes acha algo parecido que não é bem o
-     que o cliente perguntou; isso deixa o SDR ignorar e pedir na IA direto). */
-  .forcar-ia-row{ margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
-  .forcar-ia-row.no-border{ border-top:none; padding-top:0; margin-top:10px; }
-  .forcar-ia-btn{
-    display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600;
-    padding:8px 14px; border-radius:999px; border:1px dashed var(--border);
-    background:none; color:var(--muted); cursor:pointer; font-family:inherit; transition:all .15s;
+     que o cliente perguntou). Fica ao lado da barra de busca — sempre visível
+     assim que a busca encontra algo, sem precisar rolar até o fim do card. */
+  .ia-quick-btn{
+    display:inline-flex; align-items:center; gap:8px; font-size:13.5px; font-weight:700;
+    padding:11px 18px; border-radius:999px; border:1px solid var(--orange);
+    background:var(--orange); color:var(--navy-deep); cursor:pointer; font-family:inherit;
+    transition:background .15s, border-color .15s, transform .1s;
+    box-shadow:0 3px 12px -3px rgba(242,144,28,0.55);
+    white-space:nowrap;
   }
-  .forcar-ia-btn:hover{ border-color:var(--accent); border-style:solid; color:var(--accent-deep); background:var(--accent-soft); }
-  .forcar-ia-btn:disabled{ opacity:.6; cursor:default; }
+  .ia-quick-btn:hover{ background:var(--orange-deep); border-color:var(--orange-deep); }
+  .ia-quick-btn:active{ transform:translateY(1px); }
+  .ia-quick-btn:disabled{ opacity:.6; cursor:default; transform:none; }
+  @media (max-width:640px){
+    .ia-quick-btn{ width:100%; justify-content:center; }
+  }
 
   .section-heading{
     font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
@@ -323,16 +365,23 @@
   header.top.compact .brand-row{margin-bottom:8px;}
   header.top.compact .brand-logo{height:22px;}
   header.top.compact .eyebrow{max-height:0; opacity:0; margin-bottom:0;}
-  header.top.compact h1{font-size:19px;}
+  header.top.compact .kicker-line{height:0; margin-top:0;}
+  header.top.compact h1{font-size:19px; margin-bottom:6px;}
   header.top.compact .subtitle{max-height:0; opacity:0; margin-bottom:0;}
   header.top.compact .hint-row{max-height:0; opacity:0; margin-top:0;}
   header.top.compact .cats{max-height:0; opacity:0; margin-top:0;}
+  header.top.compact .hero-grid{grid-template-columns:0px 1fr;}
+  header.top.compact .hero-kicker{overflow:hidden;}
 
   @media (max-width:640px){
     header.top{padding:16px 16px 14px;}
     main{padding:20px 16px 60px;}
-    h1{font-size:24px;}
+    h1{font-size:26px;}
     .match-quote{font-size:18px;}
+    .hero-grid{grid-template-columns:1fr;}
+    .hero-kicker{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+    .kicker-line{width:20px; height:1px; margin-top:0; background:linear-gradient(90deg, var(--orange), transparent);}
+    .kicker-line.pre-reveal{width:0 !important; height:1px !important;}
   }
   /* ---------- Tela de login (acesso restrito ao e-mail @aguia...) ---------- */
   .login-gate{
@@ -420,7 +469,6 @@
   }
 </style>
 </head>
-</head>
 <body>
 
 <div class="login-gate" id="loginGate">
@@ -439,31 +487,42 @@
       <img class="brand-logo" alt="Águia Consultoria Imobiliária" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOYAAABpCAYAAAAujF+2AAAd6klEQVR42u1de3gURbb/1SS8kyBCjAQQcSHyyLKrLCsEkB4QhCUqIAp3AGUXRd6w3L2AerV7ZP1cWVZcniLKikpUFDagERCwG5Agq8gV5RVAHgF5hVcMCIT0uX9MDQ7DTKZ6pmcyQP2+L98HMz3VVafOqXNO1alzAIkKwcisxlUlFSQk4gRqtzp1zJlNJ5izWxzXe6S2lhSRCAQmSRAb6D1SW3fskTqAMcdTBFRmDIxMWu4YvrW7pI6EFMwYYmmXWmnZPdMGwZHwCMDuBgDG2C80Jyqj74sVx8wDX0hqSfgiUZLAXszISqkx/Pe1HkBG0uOMsXsJqHaFMF6xLLIEtEh+FoDUmhJSY9qNkVmNq06r+5OCznUGgLFsAClBhdEfRBeMlUebORcf3yspKWGbYM7ISqkx3FXvGcfI7c/eaMQzR9zWHs1qdEeCYwjAajMGZpWkREQgc7pj+LYxkh0lbNWY5qwWS4yCs//p9Oq+F693gum9Uxt17Jw6DA7WA2DNrvIbwwCRudcxbOsdkh0l7BXMmU0nwJH4Es5eGO34y64Z1xuRlnaplZZ910390Kj6QAb2WwIckQrjVVrz++J75SaQhBcOOxpZs/rEQgaYrEaVKfrT9R6+HgijdU6t+XmP1EfNWS2WPdC73n40qjGVMUcrMJZgp1BeRvPq7SQ7StiqMQHAnN1iPWOOLBCdo++L779WV39zdIP70TSlF2NsYLk7qjaDqGyRY9i2PpIlJWzTmACAH84uJSICY9WRmfKJPrrB764lU9Wc2XyyObtFAZrVXAbGhoCx6rESSr5GSo0pYb9gvvDN2dcY8DMAMIaaHZulfKz3Tm0UrwOfkZVSwxzbsB/Nar76gd719sPh+AtjjiaMI/amC0uR7ChhuykLAOasFsuYw9GNG2cgom0vfHQsS1t9/Ey8DFjtUeduNSPpEWQkDYOV88aom7LmNsewrS0kS0oANkf+rMk7NrVjdtr9HmZnANBMfTh18bmLVe6fvO7gpQr1Hcc27IeMpMfB2P0erc7iKLiCgEtlH0h2lLDfxwSw6FTNtQAdvayOGWPEHM6//VfNCjlCmZGVUoPf5CjAnck5zOHoVlGmavnako58svToHMmOElExZQHA/PPtw5GRNMOX+YmIUFAy0jF136xYDGppl1pp2Zk1x8abuRpEKM8YBT/17jR1/+eSHSWiJphqtzp11IfStjPmqOPHgRfo++L7onmMYna6OR2900awhIT/9lytimuBJIC+W7O9eLBzWuHXkhUlombKAoB7eVERzLIpHsa7YgmogszknKVdaqXZ/c7xHeonmjOavYhH0rexxIRnwFiVeBVK8uAMUDp21juFWVIoJWKiMb2C8jdXzS8BdvdVJi3RCjsvB5ujG9yPZinTAdY4fjUkgQgE0L41BSUvrdlybmE87VRL3CCCCfBg7y635DPmuPUqE86GmNoZWSk1hg9o8A/G2BNgLCF+zVUUA+YqbP9p7sTNtLqid6clbnDBBDxnhlr2revAWHU/ji0zPjna1pl3/KsIhP5Dxlir+LpS6tGMDLhIRCuw6+yKWRtPzh+ZX3xWsppE3AgmAJivNu6GKlU/vcqkBX03+p0L98zI333eEusPS/8Ntaz1McDqx4fpelkYTYKZi0+Kct1l5nL38qIiyV4ScSuYAGDOvnM0Q6VXfE1OIiKY5hTHiG3jRdtZ2qVWWnbv9A2MsUYVrSn54nIUhNVYXfTuC6fNDdJvlLimBBMAzJnNJ3viUa9IRnXB2H6mvcjO5MisxlWnD6icB4ejU0UI5S+7zLQbhM+ReOytie9U+Vr6jBLXtGB6dmpT3gccvb3CybXONxNzzrQJxeCBAhdiKoyXyt5FlROfOYYc/1KyjcR1I5iA5/Lx831u+ZQxluV9tcgu7cisxlWnDayy13+HN5o+I0AncPr83DVfFP873E0qCYlrQjB9/MSvGGMNLr+e6Jyx8mhmsExx5vSmzyMxUYuutiSAcI6I1rJdp2aN2lh9pdWNKQmJa1YwAeDzPzfspGQkL2aM1fxFS5lBb/Cbs1sUMOZoEj1zlU6AKAcfHXnZ8fnJHyVbSNyQggl4rmGxO5PfvbxTS1RG28/0cEwrXHGF4AxL/w21vHmz3dqSC+Q+4NKrs945/KY8a5SIJzgq7MWv7n+f6pa8BPD9FcYS0Cxl8lUClFmpud0CSWTuws6fXKPfudDcMWznNCmUElIwfTDxH5fcZNLyy8IJ9mvzz7cPj5bJSmQeQUHJyIk5Z5o7Xt3/vvQhJeIVFRpjuv5Asdnq4qVVGc2SHwJwM2OMoXalVuw83jD2nrsAAAqrXO32jKQnwzVliYgYcBFkznph0fGHnTk/frH+QLEpp15Casxy8ODKU0fdnxzt503kBbC05++uMdT7/bLiKpt/+S4sP3KD8cnRDo7h28bIyBwJKZgW4M4r+obSS/6HiIgxxtgdSc97721OXnfwEsj80rJAEp3DDyVPj37nQmd5DikhBTPcjjy0bxZgLgYIBFTLzqw59hdBw6arLl6XryW3G9tO3+P4+76XpR8pIQUzUs255NhQItoFAMhIGqZ2q+NJT9L62DwGCPiFBMBcPOudwt87px/8Xk6vxLUK+3P+qGotYUF0u0/5f2aOuK09y0wxCHD4lqcLFWRARGTsLHnOjopjqqpW1TStDYDOAO4AUA9AKoCbAVTzWdAuAigBcALAEQAHAWwzDCPP6XTujsaEje9QP7Fap8HJ4dI3QrokAagk8Gip2+0usdBuMsRSqf7sdrtjYgFFysdxBV3X7ySiUiIyBf+6BmrHU64g0zRnZ572+ppm7u2TzNmZJr32a7rqb3bmJVrSaFyEE5FMRH2JaCURneb9CwfesR0iorm6rre3mWHaCdK4VFVVW/MrEdESwXmdZ7HdTYLtxqQGKxE1s8jH2XFtyiqK8id4jmCY4N+IgJ0asW08QN8BSMl+MO0pAFjz9tmA5iwREZ3+eTJ7aO8rEQjkOE3TDgF4D8B9AGpGYE14x5YO4AlFUdYS0VYi6mUjqUVoHE0ry+53O6LUbrgYYJGPB8S7jznAIgG7BFvV2ZZTjzHgIhITRmmdU2s6Fx/fS6CNvwQj8DNKMvWJn154PsyV0aVp2jYAUwAkR2nyGYDmABYR0Spd1xtLDyp+oapqdQBPWuSFR1VVbRiXgklEfQHUtfizqpqmjQzIzbN//JbqlvwdYLU7tqz+KACsOXD6Fc+VrMscb+K70+OsXlbOz8+vRUS5AN4FUD9GqzED0ElRlC9t1p4SNkLTtK4A6oTxu77xqjEfC4PBGQBXsC9nTT75N4B2d8xIenpkVuOqW9f8tBygEz6LQR6b/eO3Fv3gzLZt234N4EHEPoifAagNYKGu60OlGMQlhobJx6MWLFhQKa4Ek4gawLODGQ4aBXOeR+YXn8X24lEM7Lbp95zrMjK/+CxM+pd3lwVlZZssCmVrRVE+h2entSKTBiUqijKLWxkScQJd1xsAUML8eT2Xy+WMN405CEDlCLTIY0E7OK1wBRHloclNYwFgzerjsxlwkTEw9kPxZgtEv0tRlBXwHHvEAxiAN1VVbSlFIj6gKMoTEfLxmLgRTK6+B0eogfrw1Sog1qw6NpaYo5XeO7WRc/HxvUS0AgCMgtILgkKZpijKUgC1wuwfAbgAz1nlfgA7AfwA4EcAZ+G7I2UNNTRNe3d8h/qJUiziAgMi5GOnrutpcSGY6enpTgC32bBaBdWazsXH96KsbGbH+26ZAADY+tPfQSjr+DRuFWz7A3iCBKwK40EArwPooWlaak5Ozm2MsdsZY00ZY79ijNXTNO0WwzA6AXgDwPEwhDTz5bWFE6RMVLgZ2x1ApBXQqyqKMi4uBkRE75M9KCzPedY6p9Y0Z7fYOiMrpQYAmLNbrDdnNHtRoH/jLQYLmERUSERDrDrzuq6nENEUfjhtBYd1XRcq9c4DDETGE60AAxFYDTDYLNjus1Hk44U28fEeOzaBHBGuMmkAetpEm3rp6endggrm6uNn1hSUvDq8d9ofAc/RCRyOhgLO/EQL5gkBeG/Dhg0tGWOv9+/fv9SSHeN0FjPG/mIYRhcAZyxozzRFUfpJvVVh2jINgF3RO41cLlePChVMRVH6CzjLBEDknJEpilLuEcKyr8v+heqVMwFg2RdsCQPVDdG/iQBusiCUkybc2+DxrKysiGIfnU6nAaAbgGILGweDpYhU2KZPPwBVBR69IDiXAyvaxxwkqI0mC2oPZ3mbQJPXHbzEdp3KU3vUuXvyuoOXqODsXBqW/psgq2AjAMME+0cAZjDGVLsyqzPGvgQw1oLWbK2q6q+kmFQIhgjwySUAzwjOZy/Of7EXTCJqAyBT4NGvGGPPAjgg6DwPKZfhp/74sfqHGncCwOj/VMoNlqyLx+2K4kvG2Gi7Z5sx9haAtYILAzRNaytlJLZQVbUdgGYCjxYYhjEbwElBLeyqKI0poo0IwHL+76UCqw0DMCiU87xmR9l34zvUT5yRv/s8SiudCkDsqgCeEtSWlwzDGBGtiTcMQ/Mbt9e0PwVgA7cmHtM0rfWodk0+kqISW2iaJmL1kWEY051O588AZgry8VA7I4FEneUUfjUqFM5577X5XAkLuSuq63rPCPunWNiJfT+atFqwYEElfq1pCRG9SETZqqrW44tHWCu83JW1lY+LBWnZkP/mLkH6R+U6WChCDhPs3MowJ2BJhP2bI3o0ouu6cq2ZXlIwY87HuX6/2yjY3+WxNmWF1D88h+6+mC3oPD8Q4UaIqK92eNnzA7+QBt0NC1E+zvX7bJEgH9/L48ijL5i6rt8FoLXAoyWapn3qZ8/nASgT2Tfhtn845kk1ABmCj+fK+pY3JoioJYC7BR49qWna+358/CaAcwK/rQpgZKwGNEVQ/c8J8nvRSKHCMPvX1YIPMOZaY6gKNmVzrxdTlohmCr5zQYS0KAxnE8hhkSmSAPxJRP1rmvZBkO8+EDQD6hFRnzBo3srCs99CwgrY9TAInqXgERH5BTA3yHfzRfnY5XJlR1UwNU17EGKRNAcyMjLWBfrCMIzlAA4LMsETYdC9tgUG+k7KmjVFcz0MQtO0XhDLUnCAMWYE+iInJ+cTAEXR4mOrPqZIhAQBmB8szpSfBeUKTnLnMCIoago+d44xdkLKmtz0KQcLgn3B+XuB4Pu6qqpqqb6r8D1AHirXRuRZwzA+DPH9G4qiDBNoKoFH8DxnYUzVRQUz7BW3c2pNddUxVxRMOzIMY4HT6SyOU4a+5k1ZXdfvhFi2jUuGYSwIwcdvK4oyRoAuCZqmPeZ2u5+zfUBENFVw0yHfZof/kJXDeCtOeQQ+SpMI8s6G2pBqGMebP9f8OSYRTRKk32bB9raK8rGVTSArpmwfiIUufSzY3nuC5mxdTdO6R2FVd0DihgJf4IU2L+E5cxfBTFE+drlcD9kqmHx3VCQDwDneUREHfD6A84KCZqWY7QXB56pIVr2xoChKF4ilWL3Iz9xF8DE8pTJE+PgpuzXmo4Ka6AtR/8jtdh8FoIvS1EKiZNGaGUmSVa1bgoLPlcWpYIqmpsxzu92HhMwzxgoBiApxB9HNzJCCyYN3ewlO2hwrhDIMY67gZCcoivKkYLOiRW4rE9Gt16BwyEil8MzYegCcgnyca7H5fwvyceVQyQCEBVPTtIchVhK+RNO0VRYFcxXEbvkzAC5B57nIQhcyJctagqj/fjHeOq5p2hCIZSkoysnJsXTjKCcn5wMARwXpN0BkM7Pc4xIuCKMFJ2SjpmltNU2zSrM18GRFD4V6Lpfr0f79+4c6O9rNVy+RPrcAsOoaEw5RjZkAC8dhNvvl8WjK9hXkiZ0ul8vpclm+57wTEMraWFdRlGy32/1R2IKZnp7eDuKpKTsj/Gzsoqv1IIQ+1F1pob1IU3lQGGOIFGctPGu3YNaw2Z2IjWPsKfcoerGhHX653B8VPlYU5SkA4QumoiijLDBTLA6fFSJqxhjbXo4zfoSIDsFTLCgUenCLwBJ+/vzNvRrwWwubDlmKosyyiQbCTK9pWnW3220n/YWjquJMW/aLMz7urOv6nU6nc6dlweR5TrvEGYET4MmWHeqg+RtBwWyk6/pdTqdzs5VOTF538BLWubdY+El9RVHsokFJFARJFEKZ7A3DKIkXhuFBFgPjjI8Zj2gLmujbUc4qPwLxd6TAADzJb7mUh+WiZqaiKH1wDSEjI6NY0IdjCKOcXAikCtL0dLzQS1GUXhDbvIw1HgsrJxDPUxOPMENdB9N1PY2Izgm2V6yqau0or9p/sHBHtKHA3BwSHNsYG8eQLDoGqzmbohmSR0Rb4piPB1jSmETUHsBdcao0GELcCnc6nUcBrBdsL0nTtP/FtYUfBJ+728Z33mLh2aJ4IBIR/Q5iqSkrio8HWTVlH45zxmzHbwmUh38KmrMMwFN8MbpWsEPwuU52vVDTNOFygYZhHI0TOo2C/TvTdqIjETUTEkyebtJKBvNo/IVCYqgIipycnBUA9goSqBqA94goIxrU1zTNblP5oOBz9YholE3vfALiO5bHKprjee4n0RoiFcHD4L7voGDawl/9D4QnbYJIBP5zEMuwLopkADMEGeAIY6xuCFNmEIB5Fhhql2EYD5S3jR2GOTUJnsJGCYI0bcQY2x+izQEA3hYc13EA7RljBRGMoTs8CbtFtM9OxlhTqz4mxI6f/pcx9qJgm8MFeYkAqAD22cjHCQBm8QU/5PxomnaH2+0uCTUg0ZyZReEmLQ7x/jwLznO5hXh8ki1bwbFIS7Dz9/YlooIwSgCG3Pzhm1ulFtrcEW4tDSJqyWkiiklhvMP2zR8iWifY5j5EAUS0ysL89A014cLZ0olIjdKABlhg5lUC7bUnovMWhbOUiJbrum6ploiqqvV0XR9KRHvCvEgtJJh8XIbFtouIyGVli17X9f48477oWExeALZCBdNCtnQiomlR4uO+FvpghGpMNKWfqapqq2gMSNf1akR02AIjtxQg0qQwBMXkf1uI6Dki6qPremPuu3j72ZCIsnlx3Dwu0GaEW+iigjkwzDHt4ePppet6I9/x6LregI/naSLaEUb7e8JkYlsFk5eiMAUX4JbR4GNVVavzxVBIEZS7mWlBIDZFeZt7jgVGC+lzcNNySQRCY/r9lQb4LCapRcJk6FiMxySicRUtmKqqJgnW1SEi2hplPhbNwWwS0dSgGyUWGnk6ygNqacGHOqmqarLAhCVzvyMauXrsQCkRPWfRumgbRln5aGFLBPNtm2Dqut7HAh+PiiYfWzSpDwd0MyxsupznpbERZeHcZGGl7itIqGpxKJwmj+TJDpNO4+JgPCW8dEaFC6YF39ssr0hyBfHxYP8fZ1hYeVciBrBQiUk4M5+fqWzGiVAuiHShI6J5FTgek4h6Rdh/WwST+8iiG315ccjHhv+Px1tQ/4NiMSBVVWtbIHKpQCRQIJOnqIIY2iQiQ9f19jaaTS9VgFlbws84EQ+CadGni8mNk/z8/FqcTqLuTEuvAFS1cE510ruLF6PVZp4FRp8ZpvBPs0C4SIXxHHcZ2keJXj2JqDAGi41JRPlWF8MYCOYewXZO82uNseLjBRbo+rJ3pe1qYSIXIIZQVbVTxM6zmLZJ40dFh21mau8O5w4imhIL35zvSk4hopNREFDvWIbYzLgRCyYR9bIw3vmx5GMSr0BHRHRaVdVkb3btUsG/+xBjcEYQ7V9EDMM3h/pwLXosjKMD3+MHg7sIbVAB4CbUcN6PcI9BTB9NPy9SXzLEBonI/D5dThvvW+CT7nHOx32vi7JqUdQ+TRRFaawoSgY8+YEawnNZOAmeeMjzAE4CKIQnYP4HwzAKDMMocLvdZ+JoHLUURWmqKEpjeHI43Q4gHZ6MBNUAVIbn8vXP8GQtLASwB8BewzC2G4ax0+12n5McISEhISEhISEhISEhISEhISERt1BVtWa4oY8SEhJRAj/fHSwpISERR8jPz6913Q+SiEaRJw3JViKaFmzQuq735IfcBUS0PFiQAhEtIiK3z/+HEtGcAOZIGj/s3sEPpseN71A/0e+ZWvxdvXzam+nbvs/nL1M5+Vd5P1YF+LsvwFiHElE+H2tuoMvkvP8rff7yiGhKoLLsRLQw2NUkHrywMtywOH61bpWqqk39Ph/C+zXV57NpfMzDAownmdNwi5cXAkU48Sgu33HnEpErQL8aEtEqXddb+32eTUQLy0v2TUTPBovq4RFuq3RdHxrkt4P5GC/3L9CzqqreQ0Qr/ekGACOzGlfl87nQnydjaRKc58w+hQeDrwzwXH8eOZLLswjk8f9nB3j2GI96aOPzjs1BBHgrv4XvvSUyIADzl/oyNV9EFgVob0t5oYY8/nQqF3STiOYT0dQAjPOs97YIv0Gfz4PrW/v1rSF/bhVvdya/2LswwLsPBYoB5he/D/F25oQ5h+15Jop7/D733v4/xhm6Go8lvuoy7/gO9RP5onuSj2UKEe0joh0jsxpX9Ru3N2XMHP5cLr961T7AgmH6R+cQ0Rje39rljGkBEe0o5zuznO8ncZ6ZyceyMNClDVVVuxNRqT/dfITf5ONqG1Oh9GH68T6D6kpEo/yTc/Gg4pV+n60LdKnWJwRuE2e8YIK5mTNDQ58Vvk0EgrlZJAbYm4so0ErJtUaJrxDxMRT4Xy/yEcwhPm3PJ08hJCHB5GlFznNmOxbOxYIQglnIF4v2PESxhC++UwNosSsyr/tcch8VSDC9dyB1XW8caJGOhmAS0a3e+QkWkscFs8RXI3MaTBUVTB7eanBrLqJ4XEcYv2kMAIZhXK64xRj7jDE23e12n/cZQBKANHgK/PjiUwCZQbIOvAegpcvlKq969IsAfgdgN5+EjFHtmvyfQL+D1fuwo65FI3hqR671ftC/f/9SPvZgqRwHc0bKhad2o5VqYP0AfAHgrwBqKYrisnn9vQhPvceeANoA2IDAVcYacV74yocXtsCTVzZgLh1FUfKIaJOiKGsArLZa7DhM9IQn9eYkeNKtPh7kuSqaps3j85IPwGEYxtsiL+Dmexd4qksvAtArEp/WEebvEnwZWlXV6gGeMYMwvtf2vioprmEY38CTQX0ygtTlZIx9ZBjGrwCMALAVwMjp63f9w++xS0H6HO2CqokB6BvsncUAboInKfEzovlSuU/ZFcB38MS8FqGcVPsR4DMA98BTHn2pxXFX8pl/f3wA4C0A7wJopyjKoBgI5li+SN4F4CsAPcu56XMcQCuugNqLVoJTFOUJPt8HAOwHkNS2bds/xlIwdwA4ryjKZRta0zSViLb6CigPet4PoIP3OhY3ufoBWB8owa1hGKbmKUldBKBPAJOxNhEVKoryEGPsdcbYwwDyACgBFoVSXFntqg6slbCzgt0AfgLQ228FbQcgmDb/kDHWg1sQfxXN1qYoivcd/eFJzF0FnpIRdteaWc21ZUvOzIGwnc//H3zMue6c1hsC/UDTtHcZY9MZYxMA7FYUpWeU90PawFO0NoPTqxOAyoqi9A/w+AVN0yYAuJ8vqK9ZeJWLK4Q53JI5H6UFs9zBPs39gIVc7ZcGys/pcw9tI7fvN3HfqE0gH1NV1T/7bLiYQXzMXO4vzOG+WcAkVj6bEnP5hpEZ6FoY3/zZw9uaT0TzVVVtacXH5N97k5kZvG87yFNJrEl5Pia/C3qaiDaG8jH5pfbDvhs+Pjfkp9roY+4hotqctsWbNm1K4n7n1CDz4fV35/GxrPO/G+uz+bOQ0zmP+5xDrfiY/HqXd65GhfIxeZ8KffvD+7zP77MrfEyfjcvxoXxMIrqP06qrz2fevLJKzExZxthLhmE8xLVSDQBDJ9zbYFyA5z7TNK01gK+52bVe07TfM8a+DNDsXK92YYzlwlOc9r0AK+5AwzBUeArTJvF3v+T/3IYNG3oBmA7P9aYyAAMYY68H8WvzAJzx+bsYgAF3wJNy/1QQmrxlGEYnALt43xZpmvZrt9u9y+/REm6ubwMuVybrA2CjruvN/Z6dB0D30ZapAD40DOMt72dZWVmnAIyBxSrOhmEc4ePxr8y1AcBbjLETAF4AMLFVq1YlvC9r/dvJycl5BMBQbr7eDOA5TdO6cx/bX7vOAHAEnqty3xuG8eiy5we+4devowBmGIbhXybiW/77Yz7z5D/mlQD8N/IOAXjGrz9TACwtKCjwrWC2EcBrGRkZF/h8LuA86L8XshfAbD4OL5IB/FPTtLU+fPoxgFcgWOzXH/8Pnxy3BbCGjkgAAAAASUVORK5CYII=">
       <div class="user-menu" id="sessionInfo"></div>
     </div>
-    <div class="eyebrow">Ferramenta interna · SDR &amp; Corretores</div>
-    <h1>Gerador de Respostas para Objeções</h1>
-    <p class="subtitle">Cola a objeção que o cliente mandou no WhatsApp (ou busca por palavra-chave) e a resposta pronta aparece na hora, curta, no tom certo, sem enrolação.</p>
-
-    <div class="controls">
-      <div class="search-wrap" id="searchWrap">
-        <svg class="search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input id="search" type="text" placeholder="Cola aqui a mensagem do cliente...">
-        <button class="clear-btn" id="clearBtn" title="Limpar busca"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div class="hero-grid">
+      <div class="hero-kicker">
+        <div class="eyebrow hero-anim" id="e1">Ferramenta interna</div>
+        <div class="kicker-line pre-reveal" id="kickerLine"></div>
       </div>
-      <div class="stat-pill" id="statPill"><strong>15</strong> objeções documentadas</div>
-    </div>
-    <div class="hint-row">Cola a frase inteira pra achar mais rápido · atalho <kbd>/</kbd> foca a busca</div>
+      <div class="hero-main">
+        <h1 class="hero-anim" id="e2">Quebra de objeções, no tom certo.</h1>
+        <p class="subtitle hero-anim" id="e3">Cola a objeção que o cliente mandou no WhatsApp (ou busca por palavra-chave) e a resposta pronta aparece na hora, curta, no tom certo, sem enrolação.</p>
 
-    <div class="audio-actions" id="audioActions">
-      <input type="file" id="audioFileInput" accept="audio/*" style="display:none;">
-      <button class="audio-btn" id="btnAnexarAudio" type="button" title="Envia um áudio de WhatsApp que o cliente mandou">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05 12.25 20.24a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a1.5 1.5 0 0 1-2.12-2.12l8.49-8.48"/></svg>
-        Anexar áudio
-      </button>
-      <button class="audio-btn" id="btnGravarAudio" type="button" title="Grava um áudio agora pelo microfone">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        <span id="btnGravarLabel">Gravar áudio</span>
-      </button>
-      <span class="audio-status" id="audioStatus"></span>
+        <div class="controls hero-anim" id="e4">
+          <div class="search-wrap" id="searchWrap">
+            <svg class="search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="search" type="text" placeholder="Cola aqui a mensagem do cliente">
+            <button class="clear-btn" id="clearBtn" title="Limpar busca"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+          <div class="stat-pill" id="statPill"><strong>15</strong> objeções documentadas</div>
+          <button type="button" class="ia-quick-btn" id="iaQuickBtn" style="display:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+            Gerar com IA mesmo assim
+          </button>
+        </div>
+        <div class="hint-row">Cola a frase inteira pra achar mais rápido · atalho <kbd>/</kbd> foca a busca</div>
+
+        <div class="audio-actions" id="audioActions">
+          <input type="file" id="audioFileInput" accept="audio/*" style="display:none;">
+          <button class="audio-btn" id="btnAnexarAudio" type="button" title="Envia um áudio de WhatsApp que o cliente mandou">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05 12.25 20.24a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a1.5 1.5 0 0 1-2.12-2.12l8.49-8.48"/></svg>
+            Anexar áudio
+          </button>
+          <button class="audio-btn" id="btnGravarAudio" type="button" title="Grava um áudio agora pelo microfone">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            <span id="btnGravarLabel">Gravar áudio</span>
+          </button>
+          <span class="audio-status" id="audioStatus"></span>
+        </div>
+      </div>
     </div>
 
     <div class="cats" id="cats"></div>
@@ -649,6 +708,20 @@ const searchInput = document.getElementById('search');
 const searchWrap = document.getElementById('searchWrap');
 const clearBtn = document.getElementById('clearBtn');
 const statPill = document.getElementById('statPill');
+const iaQuickBtn = document.getElementById('iaQuickBtn');
+let queryParaForcarIA = '';
+
+iaQuickBtn.addEventListener('click', () => {
+  if(!queryParaForcarIA) return;
+  const myToken = searchToken;
+  iaQuickBtn.disabled = true;
+  iaQuickBtn.style.display = 'none';
+  calloutMount.innerHTML = '';
+  calloutMount.appendChild(renderLoadingCallout());
+  tryAIFallback(queryParaForcarIA, myToken).finally(() => {
+    iaQuickBtn.disabled = false;
+  });
+});
 
 function computeCategories(){
   return ["Todas", ...Array.from(new Set(DATA.map(d => d.cat)))];
@@ -785,7 +858,7 @@ function wireDelete(container, item){
   });
 }
 
-function renderCallout(topItem, alts, queryText){
+function renderCallout(topItem, alts){
   const container = document.createElement('div');
   container.className = 'match-callout';
 
@@ -805,8 +878,6 @@ function renderCallout(topItem, alts, queryText){
   wireCopy(bodyMount, topItem);
   wireDelete(bodyMount, topItem);
 
-  let jaTemRodapeExtra = false;
-
   if(alts.length){
     const altsWrap = document.createElement('div');
     altsWrap.className = 'match-alts';
@@ -821,32 +892,6 @@ function renderCallout(topItem, alts, queryText){
       altsWrap.appendChild(chip);
     });
     container.appendChild(altsWrap);
-    jaTemRodapeExtra = true;
-  }
-
-  // Nenhuma das respostas prontas serve? O SDR pode pedir uma resposta gerada
-  // na hora pela IA, mesmo já tendo achado um match "forte" na base — a busca
-  // é por palavra-chave/parecença, então às vezes acha algo parecido que não
-  // é bem o que o cliente perguntou de verdade.
-  if(queryText){
-    const forcarWrap = document.createElement('div');
-    forcarWrap.className = 'forcar-ia-row' + (jaTemRodapeExtra ? ' no-border' : '');
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'forcar-ia-btn';
-    btn.innerHTML = `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-      Prefiro gerar uma resposta com IA
-    `;
-    btn.addEventListener('click', () => {
-      const myToken = searchToken;
-      btn.disabled = true;
-      calloutMount.innerHTML = '';
-      calloutMount.appendChild(renderLoadingCallout());
-      tryAIFallback(queryText, myToken);
-    });
-    forcarWrap.appendChild(btn);
-    container.appendChild(forcarWrap);
   }
 
   container.querySelector('.match-quote').classList.add('fade-in');
@@ -943,7 +988,7 @@ function renderAll(forceTopItem){
     if(strongMatch){
       strongMatchFound = true;
       const alts = scored.filter(s => s.item !== top.item && s.score > 0).slice(0, 3).map(s => s.item);
-      calloutMount.appendChild(renderCallout(top.item, alts, q));
+      calloutMount.appendChild(renderCallout(top.item, alts));
       listToRender = catFiltered.filter(d => d !== top.item);
       total = listToRender.length;
       if(listToRender.length){
@@ -961,6 +1006,19 @@ function renderAll(forceTopItem){
   }
 
   statPill.innerHTML = `<strong>${total}</strong> de ${DATA.length} objeções`;
+
+  // Botão "Gerar com IA mesmo assim": só faz sentido quando a busca achou um
+  // match forte na base (senão a IA já dispara sozinha automaticamente logo
+  // abaixo). Guarda o texto atual pra usar se o SDR clicar no botão.
+  if(strongMatchFound && q){
+    queryParaForcarIA = q;
+    if(iaQuickBtn.style.display === 'none') iaQuickBtn.classList.add('fade-in');
+    iaQuickBtn.style.display = 'inline-flex';
+    iaQuickBtn.disabled = false;
+  } else {
+    iaQuickBtn.style.display = 'none';
+    iaQuickBtn.classList.remove('fade-in');
+  }
 
   // Nada forte achado na base, mas parece uma frase de verdade (não só 1-2 palavras soltas)?
   // Tenta montar uma resposta na hora, pra nunca deixar o SDR sem nada.
@@ -1040,6 +1098,26 @@ async function salvarObjecaoNaBase(objecaoText, respostaTexto, btn){
   }
 }
 
+// "Digita" a resposta da IA na tela, letra por letra, em vez de aparecer
+// pronta de uma vez. Reforça visualmente que essa resposta foi montada ali,
+// na hora, especificamente pra essa objeção — diferente das respostas da
+// base, que aparecem instantâneas porque já estavam prontas.
+function tipografarResposta(el, texto, velocidadeMs){
+  el.textContent = '';
+  el.classList.add('digitando');
+  let i = 0;
+  const passo = () => {
+    if(i <= texto.length){
+      el.textContent = texto.slice(0, i);
+      i++;
+      setTimeout(passo, velocidadeMs || 14);
+    } else {
+      el.classList.remove('digitando');
+    }
+  };
+  passo();
+}
+
 function renderAICallout(objecaoText, respostaTexto){
   const el = document.createElement('div');
   el.className = 'match-callout ai-callout fade-in';
@@ -1060,7 +1138,7 @@ function renderAICallout(objecaoText, respostaTexto){
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5-1.4c1.4.8 3.1 1.2 5 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
       Pronto pra colar no WhatsApp
     </div>
-    <div class="script-box">${escapeHtml(respostaTexto)}</div>
+    <div class="script-box" id="aiScriptBox"></div>
     <div class="card-actions">
       <button class="copy-btn" data-copy>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -1075,6 +1153,7 @@ function renderAICallout(objecaoText, respostaTexto){
   wireCopy(aiBody, aiItem);
   const addBtn = aiBody.querySelector('[data-add]');
   addBtn.addEventListener('click', () => salvarObjecaoNaBase(objecaoText, respostaTexto, addBtn));
+  tipografarResposta(aiBody.querySelector('#aiScriptBox'), respostaTexto, 12);
   return el;
 }
 
@@ -1474,28 +1553,30 @@ async function carregarTudoELiberar(email, nome){
     const fixas = (dados && Array.isArray(dados.fixas)) ? dados.fixas : [];
     const extras = (dados && Array.isArray(dados.extras)) ? dados.extras : [];
 
-    DATA = fixas.map(item => prepareItem({ ...item }));
-    extras.forEach(o => {
-      DATA.push(prepareItem({
-        id: o.id,
-        cat: o.categoria || NOVA_CATEGORIA_IA,
-        quote: o.pergunta,
-        behind: "Objeção real trazida por um SDR e resolvida pela IA em tempo real.",
-        technique: "Sugerida pela IA",
-        script: o.resposta,
-        tone: "Gerada automaticamente e ainda não revisada pelo marketing. Se achar que pode melhorar, avisa a equipe.",
-        keywords: o.pergunta
-      }));
-    });
-
     categories = computeCategories();
     loginGate.classList.add('hidden');
     if(email) mostrarSessao(email, nome);
     renderCats();
     renderAll();
+    animarEntradaHero();
   } catch(err){
     mostrarErroLogin('Login feito, mas não consegui carregar a base agora. Recarrega a página.');
   }
+}
+
+// Dispara a entrada coreografada do cabeçalho (cada elemento aparece em
+// sequência) — chamada só depois do login, senão a animação aconteceria
+// escondida atrás da tela de acesso restrito.
+function animarEntradaHero(){
+  const passos = [['e1', 0], ['e2', 260], ['e3', 460], ['e4', 640]];
+  passos.forEach(([id, delay]) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.style.animationDelay = delay + 'ms';
+    el.style.animationPlayState = 'running';
+  });
+  const linha = document.getElementById('kickerLine');
+  setTimeout(() => { if(linha) linha.classList.remove('pre-reveal'); }, 160);
 }
 
 (async function iniciarAcesso(){
