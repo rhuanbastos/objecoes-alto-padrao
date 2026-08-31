@@ -1553,6 +1553,20 @@ async function carregarTudoELiberar(email, nome){
     const fixas = (dados && Array.isArray(dados.fixas)) ? dados.fixas : [];
     const extras = (dados && Array.isArray(dados.extras)) ? dados.extras : [];
 
+    DATA = fixas.map(item => prepareItem({ ...item }));
+    extras.forEach(o => {
+      DATA.push(prepareItem({
+        id: o.id,
+        cat: o.categoria || NOVA_CATEGORIA_IA,
+        quote: o.pergunta,
+        behind: "Objeção real trazida por um SDR e resolvida pela IA em tempo real.",
+        technique: "Sugerida pela IA",
+        script: o.resposta,
+        tone: "Gerada automaticamente e ainda não revisada pelo marketing. Se achar que pode melhorar, avisa a equipe.",
+        keywords: o.pergunta
+      }));
+    });
+
     categories = computeCategories();
     loginGate.classList.add('hidden');
     if(email) mostrarSessao(email, nome);
