@@ -1478,6 +1478,10 @@ function mostrarSessao(email, nome){
         <div class="user-menu-dropdown-email" title="${escapeHtml(email)}">${escapeHtml(email)}</div>
       </div>
       <div class="user-menu-divider"></div>
+      <a href="simulador-valorizacao.html" class="user-menu-item" role="menuitem">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
+        Simulador de valorização
+      </a>
       <a href="painel.html" class="user-menu-item" role="menuitem">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         Ver uso da equipe
@@ -1546,8 +1550,7 @@ function iniciarBotaoGoogle(clientId){
   }
   google.accounts.id.initialize({
     client_id: clientId,
-    callback: handleCredentialResponse,
-    hd: 'aguiaconsultoriaimobiliaria.com'
+    callback: handleCredentialResponse
   });
   googleBtnContainer.innerHTML = '';
   google.accounts.id.renderButton(googleBtnContainer, { theme: 'filled_black', size: 'large', text: 'continue_with' });
