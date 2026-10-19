@@ -499,6 +499,56 @@
   .card-tag{letter-spacing:.12em;}
   .script-box{border-radius:14px;}
   @media (max-width:640px){ h1{font-size:28px;} }
+  /* ===== Visual v3: mais contraste, centralizado, hovers com degradê ===== */
+  .eyebrow, .kicker-line, .hero-kicker{display:none !important;}
+  .hero-grid{display:block !important;}
+  .hero-main{text-align:center; display:flex; flex-direction:column; align-items:center;}
+  h1{max-width:760px; font-weight:300; font-size:46px; margin:6px 0 14px; text-shadow:0 2px 24px rgba(242,144,28,.18);}
+  .subtitle{color:rgba(255,255,255,.78) !important; font-size:14.5px !important; font-weight:400 !important; max-width:600px !important; margin:0 auto 26px !important; text-align:center;}
+  .controls{width:100%; max-width:820px; margin:0 auto; align-items:center; justify-content:center; gap:14px;}
+  .search-wrap{flex:1 1 440px;}
+  .search-wrap input{padding:16px 46px 16px 52px !important; border:1.5px solid rgba(255,255,255,.38) !important; border-radius:16px !important; background:rgba(255,255,255,.08) !important; font-size:16px !important; font-weight:500; color:#fff; transition:border-color .2s, background .2s, box-shadow .2s;}
+  .search-wrap input:hover{border-color:rgba(242,144,28,.7) !important; background:rgba(255,255,255,.11) !important;}
+  .search-wrap input:focus{border-color:var(--orange) !important; background:rgba(255,255,255,.14) !important; box-shadow:0 0 0 4px rgba(242,144,28,.22), 0 14px 34px -14px rgba(242,144,28,.5);}
+  .search-wrap input::placeholder{color:rgba(255,255,255,.66) !important; font-weight:500 !important;}
+  .search-icon{left:18px !important; width:22px; height:22px; color:var(--orange) !important; filter:drop-shadow(0 0 7px rgba(242,144,28,.75));}
+  .stat-pill{padding:0 !important; color:rgba(255,255,255,.75) !important; font-weight:500; width:100%; text-align:center;}
+  .stat-pill strong{color:#fff !important; font-weight:700 !important;}
+  .ia-quick-btn{width:auto !important; padding:14px 26px !important; border-radius:14px !important; background:linear-gradient(135deg,#f6a23a,#e0780f) !important; border-color:transparent !important; box-shadow:0 14px 28px -12px rgba(242,144,28,.85); transition:transform .18s, box-shadow .18s, filter .18s;}
+  .ia-quick-btn:hover{transform:translateY(-2px); filter:brightness(1.07); box-shadow:0 20px 34px -14px rgba(242,144,28,.95);}
+  .hint-row{color:rgba(255,255,255,.62) !important; font-weight:400 !important; text-align:center; margin-top:14px !important;}
+  .hint-row kbd{color:#fff !important; background:rgba(255,255,255,.16) !important; border-color:rgba(255,255,255,.35) !important;}
+  .ia-note{display:flex; align-items:center; gap:12px; max-width:820px; margin:16px auto 0; padding:13px 18px; border-radius:14px; background:linear-gradient(135deg, rgba(242,144,28,.20), rgba(242,144,28,.06)); border:1px solid rgba(242,144,28,.5); color:rgba(255,255,255,.92); font-size:12.5px; line-height:1.55; font-weight:400; text-align:left; max-height:140px; overflow:hidden; opacity:1; transition:max-height .25s ease, opacity .2s ease, margin .25s ease, padding .25s ease;}
+  .ia-note .ia-note-ico{flex:0 0 auto; width:30px; height:30px; border-radius:50%; background:var(--orange); color:#000; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; box-shadow:0 0 16px rgba(242,144,28,.7);}
+  .ia-note strong{color:var(--orange); font-weight:700;}
+  header.top.compact .ia-note{max-height:0; opacity:0; margin-top:0; padding-top:0; padding-bottom:0; border-width:0;}
+  .audio-actions{justify-content:center !important; margin:16px auto 0 !important; gap:10px !important;}
+  .audio-btn{color:rgba(255,255,255,.9) !important; border:1.5px solid rgba(255,255,255,.3) !important; background:rgba(255,255,255,.07) !important; padding:9px 18px !important; font-weight:600 !important;}
+  .audio-btn:hover{background:linear-gradient(135deg,#f6a23a,#e0780f) !important; border-color:transparent !important; color:#000 !important; box-shadow:0 10px 22px -10px rgba(242,144,28,.9);}
+  .audio-btn svg{filter:drop-shadow(0 0 5px rgba(242,144,28,.55));}
+  .audio-btn:hover svg{filter:none;}
+  .cats{justify-content:center !important; max-width:980px; margin-left:auto !important; margin-right:auto !important; gap:10px !important;}
+  .cat-btn{color:#fff !important; border:1.5px solid rgba(255,255,255,.28) !important; background:rgba(255,255,255,.08) !important; padding:9px 17px !important;}
+  .cat-btn:hover{background:linear-gradient(135deg,rgba(246,162,58,.95),rgba(224,120,15,.95)) !important; border-color:transparent !important; color:#000 !important; box-shadow:0 10px 22px -10px rgba(242,144,28,.9);}
+  .cat-btn.active{background:linear-gradient(135deg,#f6a23a,#e0780f) !important; color:#000 !important; border-color:transparent !important; box-shadow:0 10px 22px -10px rgba(242,144,28,.9);}
+  main{max-width:1180px; margin-left:auto !important; margin-right:auto !important;}
+  .section-heading{color:#2b2a28 !important; font-weight:800 !important; letter-spacing:.14em !important; text-align:center;}
+  .card{position:relative; overflow:hidden; border:1.5px solid #e4e0da !important; background:#fff; display:flex; flex-direction:column;}
+  .card::before{content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(242,144,28,.0) 30%, rgba(242,144,28,.20) 100%); opacity:0; transition:opacity .28s ease; pointer-events:none;}
+  .card::after{content:''; position:absolute; left:0; right:0; top:0; height:3px; background:linear-gradient(90deg,#f6a23a,#e0780f); transform:scaleX(0); transform-origin:left; transition:transform .3s ease; pointer-events:none;}
+  .card:hover, .card.open{border-color:rgba(242,144,28,.7) !important;}
+  .card:hover::before, .card.open::before{opacity:1;}
+  .card:hover::after, .card.open::after{transform:scaleX(1);}
+  .card-body{border-top:0 !important;}
+  .card.open .card-body{border-top:1px solid var(--border) !important;}
+  .card-tag{align-self:flex-start; background:var(--orange-soft) !important; color:#a85a06 !important; font-weight:800 !important; letter-spacing:.1em !important; border:1px solid rgba(242,144,28,.4);}
+  .card-quote{color:#0b0b0a !important; font-weight:700 !important;}
+  .card-behind{color:#3a3936 !important;}
+  .toggle-hint{color:#b8620a !important; font-weight:700 !important; background:var(--orange-soft); padding:6px 12px; border-radius:999px; transition:background .2s, color .2s;}
+  .card:hover .toggle-hint{background:linear-gradient(135deg,#f6a23a,#e0780f); color:#000 !important;}
+  .card-head{padding:20px 22px 16px !important; flex:1 1 auto; display:flex; flex-direction:column;}
+  .card-toggle-row{justify-content:flex-end !important; margin-top:auto !important; padding-top:12px;}
+  @media (max-width:640px){ h1{font-size:28px;} .ia-note{font-size:12px; padding:11px 14px;} .search-wrap input{padding-left:46px !important;} }
 </style>
 </head>
 <body>
@@ -548,7 +598,8 @@
         </div>
         <div class="hint-row">Cola a frase inteira pra achar mais rápido · atalho <kbd>/</kbd> foca a busca</div>
 
-        <div class="audio-actions" id="audioActions">
+        <div class="ia-note" id="iaNote"><span class="ia-note-ico">IA</span><span>Os cards abaixo trazem <strong>respostas fixas</strong>, prontas pra usar. Mas a <strong>IA foi treinada pra responder qualquer pergunta sobre objeções</strong>: cola ou escreve a mensagem do cliente na busca e peça a resposta com IA.</span></div>
+      <div class="audio-actions" id="audioActions">
           <input type="file" id="audioFileInput" accept="audio/*" style="display:none;">
           <button class="audio-btn" id="btnAnexarAudio" type="button" title="Envia um áudio de WhatsApp que o cliente mandou">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05 12.25 20.24a5.5 5.5 0 0 1-7.78-7.78l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a1.5 1.5 0 0 1-2.12-2.12l8.49-8.48"/></svg>
