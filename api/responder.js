@@ -50,8 +50,14 @@ const EXEMPLOS = [
   { objecao: "Essas cidades são muito pequenas, prefiro a infraestrutura de uma cidade grande.",
     resposta: "Entendo, mas aqui é o melhor dos dois mundos: você tem o sossego e a segurança de cidade pequena, só que a 15-20 minutos do aeroporto de Navegantes e de Balneário Camboriú, com hospital, escola e restaurante bom por perto.\n\nQuer que eu te mande como é o dia a dia de quem já mora na região?" },
   { objecao: "Será que compensa investir numa praia fora da temporada de verão?",
-    resposta: "Antigamente talvez, mas isso mudou. Em Penha o Beto Carrero puxa turista o ano inteiro, não só verão, e em Piçarras o selo Bandeira Azul e o público de bem-estar mantêm a procura por locação mesmo fora de temporada.\n\nQuer que eu te explique como funciona essa demanda fora do verão na prática?" }
-];
+    resposta: "Antigamente talvez, mas isso mudou. Em Penha o Beto Carrero puxa turista o ano inteiro, não só verão, e em Piçarras o selo Bandeira Azul e o público de bem-estar mantêm a procura por locação mesmo fora de temporada.\n\nQuer que eu te explique como funciona essa demanda fora do verão na prática?" },
+
+  { objecao: "Vale mais a pena comprar pra alugar por temporada ou pra morar?",
+    resposta: "Depende do seu objetivo, e os dois funcionam aqui. Pra renda, short stay em Penha e Barra Velha tem demanda o ano todo, só que o resultado depende da diária, da ocupação e da gestora, então a gente simula com o número real da unidade. Pra morar, você usa e o patrimônio continua valorizando.\n\nMe conta: a ideia é gerar renda, usar a casa, ou um pouco dos dois? Aí eu já te mostro a simulação certa." },
+  { objecao: "Quanto vou ganhar de valorização se comprar na planta?",
+    resposta: "O histórico da Tríade gira em 20% a 30% ao ano, mas isso é histórico, não promessa. O que muda o jogo na planta é que a valorização incide sobre o imóvel inteiro e você só desembolsou a entrada, então o ganho sobre o que saiu do seu bolso fica bem maior.\n\nMe passa o valor que você tá olhando e o prazo de entrega? Monto a simulação por cenário e depois o closer confirma os números reais." },
+  { objecao: "Esse retorno de alavancagem parece bom demais, tem pegadinha?",
+    resposta: "Boa pergunta. A conta é simples: o imóvel valoriza sobre o valor total e você só colocou a entrada, por isso o percentual sobre o que pagou parece alto. Não é rendimento garantido, depende da valorização acontecer e vale compará-la com o que sua entrada renderia na renda fixa, são riscos e liquidez diferentes.\n\nQuer que eu simule os dois lado a lado pra você ver com seus números?" },];
 
 // Base de fatos reais sobre a região onde a Águia atua hoje (Tríade do Litoral Norte de SC).
 // A IA usa isso pra embasar respostas com dado real, sem inventar número. Atualize aqui quando
@@ -89,6 +95,12 @@ EMPREENDIMENTOS QUE A ÁGUIA ESTÁ TRABALHANDO HOJE (só cite um destes pelo nom
 3) ÈZE (construtora Hacasa) — Balneário Piçarras. Lançamento, entrega prevista pra 2030. Primeiro empreendimento "conceito Wellness" de Piçarras: spa, sauna, piscina interna e externa, academia, horta compartilhada, espaço fire place, playground. Tipologias de 76 m² (tipo A) até 184 m² (terraço) e coberturas de 151-156 m². Perfil mais bem-estar/qualidade de vida, forte pra moradia, mas também valorização (é lançamento cedo).
 
 4) AURUN INVEST LIVING (construtora XPCON) — Itajubá, Barra Velha (divisa com Piçarras). Na planta/pré-reserva, entrega prevista dez/2030. Foco claro em investimento/renda: pensado pra short stay (aluguel por temporada), com pub temático, poker room, coworking, energia fotovoltaica, reconhecimento facial. Tipologias de 1 quarto (39 m²) a 3 quartos (101-103 m²), studio de 1 quarto na faixa de R$ 530 a 610 mil. É o mais indicado quando o cliente perguntar especificamente sobre gerar renda com Airbnb/temporada.
+
+SIMULADOR DE VALORIZAÇÃO (ferramenta interna dos SDRs; o SDR escolhe a cidade, a taxa média anual de valorização e a finalidade, e a conta é juro composto sobre o valor do imóvel). Como explicar cada finalidade ao cliente:
+- VALORIZAÇÃO NA PLANTA: o imóvel valoriza sobre o valor TOTAL desde a compra, mas o cliente só desembolsou a entrada e as parcelas até ali. Por isso o ganho sobre o que já foi pago é bem maior que o percentual de valorização do imóvel. Isso é efeito de alavancagem, NÃO é taxa de retorno garantida.
+- SHORT STAY (locação por temporada): a renda vem da diária média x taxa de ocupação, menos a taxa da gestora/administração (e custos). Soma-se à valorização do imóvel. É estimativa, depende de temporada, gestão e unidade; nunca prometa renda.
+- MORADIA / ALAVANCAGEM: o cliente mora (ou usa) o imóvel e, no mesmo tempo, o patrimônio valoriza. Alavancagem = valorização do imóvel inteiro comparada com o dinheiro que realmente saiu do bolso (entrada). Vale comparar com o rendimento que a mesma entrada teria na renda fixa, deixando claro que são riscos e liquidez diferentes.
+REGRAS PARA ESSAS RESPOSTAS: use as taxas, ocupação e diárias que o SDR informar na pergunta; se ele não informar, não invente, use só o que está no HISTÓRICO acima (20% a 30% ao ano é o histórico documentado da Tríade como um todo, NÃO uma promessa nem uma média separada por cidade) e diga que o closer fecha os números. Sempre reforce que é simulação, não garantia, e que o closer confirma os valores reais.
 
 Ao responder uma objeção, se o contexto pedir um exemplo concreto de empreendimento, escolha o que combina com o que o cliente quer (moradia x investimento x renda por temporada) em vez de citar todos.`;
 
