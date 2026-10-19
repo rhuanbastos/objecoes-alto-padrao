@@ -311,6 +311,62 @@
     .kicker-line{width:20px; height:1px; margin-top:0; background:linear-gradient(90deg, var(--orange), transparent);}
     .user-menu-name{display:none;}
   }
+  /* ===== Visual v2: tudo em Montserrat, mais sofisticado ===== */
+  :root{--serif:'Montserrat',system-ui,sans-serif;}
+  body{letter-spacing:-.005em; -webkit-font-smoothing:antialiased;}
+  header.top{position:relative; overflow:hidden;}
+  header.top::before{content:''; position:absolute; right:-120px; top:-170px; width:540px; height:540px; border-radius:50%; background:radial-gradient(circle, rgba(242,144,28,.30), transparent 65%); pointer-events:none;}
+  header.top .header-inner{position:relative; z-index:1;}
+  h1{font-weight:300; font-size:44px; letter-spacing:-.02em;}
+  h1::after{content:''; display:block; width:56px; height:2px; background:var(--orange); margin-top:22px;}
+  .form-card{padding:38px; border-radius:20px; border-color:#ece8e2; box-shadow:0 1px 2px rgba(0,0,0,.04), 0 28px 56px -28px rgba(0,0,0,.30);}
+  .form-card h2{font-style:normal; font-weight:600; font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted-2); margin-bottom:20px;}
+  .modo-tabs{display:inline-flex; gap:2px; background:var(--surface-alt); padding:5px; border-radius:999px; margin:0 0 30px;}
+  .modo-tab{border:none; background:transparent; padding:11px 22px; color:var(--muted);}
+  .modo-tab:hover{border:none; background:rgba(0,0,0,.05); color:var(--ink);}
+  .modo-tab.ativo{background:#000; color:#fff; box-shadow:0 6px 14px -6px rgba(0,0,0,.6);}
+  .field label{font-size:10.5px; letter-spacing:.13em; color:var(--muted-2);}
+  .field input, .field select{border-radius:12px; padding:14px 16px; background:var(--surface-warm); border:1.5px solid #ece8e2; font-weight:500;}
+  .field input:focus{background:#fff;}
+  .form-grid{align-items:start;}
+  .field-cidade{grid-column:1 / -1;}
+  .chips{display:flex; gap:8px; flex-wrap:wrap;}
+  .chip{flex:0 1 190px; padding:14px 12px; border-radius:12px; border:1.5px solid #ece8e2; background:var(--surface-warm); font:600 13px 'Montserrat',sans-serif; color:var(--muted); cursor:pointer; transition:all .15s; white-space:nowrap;}
+  .chip:hover{border-color:var(--orange); color:var(--ink);}
+  .chip.ativo{background:#000; border-color:#000; color:#fff; box-shadow:0 8px 18px -8px rgba(0,0,0,.6);}
+  .btn-simular{border-radius:14px; padding:16px 36px; font-size:12.5px; letter-spacing:.12em; text-transform:uppercase; box-shadow:0 14px 28px -12px rgba(242,144,28,.8);}
+  .btn-simular:hover{transform:translateY(-1px);}
+  .premissas summary{letter-spacing:.14em; font-size:11px; color:var(--muted-2);}
+  .resultado-label{font-weight:600; letter-spacing:.16em; margin-bottom:20px;}
+  .cenarios-grid{gap:20px;}
+  .cenario-card{border-radius:20px; padding:34px 28px 26px; border-color:#ece8e2; animation:cardIn .65s cubic-bezier(.2,.7,.2,1) backwards;}
+  .cenario-card:nth-child(2){animation-delay:.08s;}
+  .cenario-card:nth-child(3){animation-delay:.16s;}
+  @keyframes cardIn{from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:none;}}
+  .cenario-valor{font-family:'Montserrat',sans-serif; font-weight:600; font-size:30px; letter-spacing:-.025em; font-variant-numeric:tabular-nums; margin-bottom:18px;}
+  .cenario-tag{letter-spacing:.14em; font-size:10.5px;}
+  .cenario-card.destaque{background:linear-gradient(160deg,#1c1c1c,#000); border-color:#000; color:#fff; box-shadow:0 34px 64px -26px rgba(0,0,0,.6);}
+  .cenario-card.destaque::before{content:'Cenário base'; position:absolute; top:-11px; left:26px; background:var(--orange); color:#000; font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; padding:5px 12px; border-radius:999px;}
+  .cenario-card.destaque .cenario-tag{color:var(--orange);}
+  .cenario-card.destaque .cenario-taxa{color:rgba(255,255,255,.55);}
+  .cenario-card.destaque .cenario-valor{color:#fff;}
+  .cenario-card.destaque .cenario-linha{color:rgba(255,255,255,.62); border-top-color:rgba(255,255,255,.12);}
+  .cenario-card.destaque .cenario-linha strong{color:#fff;}
+  .cenario-card.destaque .cenario-linha.ganho strong{color:#7ddc8a;}
+  .cenario-card.destaque .cenario-linha.renda strong{color:var(--orange);}
+  .contexto-card{border-radius:20px;}
+  .contexto-quote{font-style:normal; font-weight:500; font-size:19px; letter-spacing:-.01em;}
+  .ia-card{border-radius:20px; padding:28px;}
+  .ia-card h3{font-style:normal; font-weight:600; font-size:16px; letter-spacing:-.01em;}
+  .ia-card textarea{border-radius:12px; background:var(--surface-warm); border-color:#ece8e2;}
+  .btn-ia{border-radius:12px; letter-spacing:.02em;}
+  @media (max-width:640px){
+    h1{font-size:28px;}
+    .form-card{padding:22px;}
+    .modo-tabs{display:flex; border-radius:18px;}
+    .modo-tab{flex:1; padding:10px 6px; font-size:11.5px;}
+    .chip{flex:1 1 30%; padding:12px 6px; font-size:12px;}
+  }
 </style>
 </head>
 <body>
@@ -355,13 +411,14 @@
       <button type="button" class="modo-tab" data-modo="moradia">Moradia e alavancagem</button>
     </div>
     <div class="form-grid">
-      <div class="field">
+      <div class="field field-cidade">
         <label for="cidade">Cidade</label>
-        <select id="cidade">
-          <option value="penha">Penha</option>
-          <option value="picarras">Balneário Piçarras</option>
-          <option value="barravelha">Barra Velha</option>
-        </select>
+        <div class="chips" id="cidadeChips">
+          <button type="button" class="chip ativo" data-v="penha">Penha</button>
+          <button type="button" class="chip" data-v="picarras">Balneário Piçarras</button>
+          <button type="button" class="chip" data-v="barravelha">Barra Velha</button>
+        </div>
+        <input type="hidden" id="cidade" value="penha">
       </div>
       <div class="field">
         <label for="valorImovel">Valor do imóvel</label>
@@ -637,6 +694,7 @@ function renderResultado(){
     resumoCenarios.push(`${cen.tag} ${formatarPercent(cen.pontos)} a.a.: imóvel ${formatarMoeda(r.valorFinal)}, valorização ${formatarMoeda(r.ganhoRS)}, ${formatarPercent(r.retornoSobreEntrada)} sobre a entrada`);
     return cardCenario(cen, prazoAnos, r, linhas);
   }).join('');
+  animarCards();
 
   const nomeModo = { valorizacao:'valorização na planta', shortstay:'short stay', moradia:'moradia e alavancagem' }[modo];
   ultimoResumo = `Simulação (${nomeModo}) em ${cidade.nome}: imóvel de ${formatarMoeda(valorImovel)}, entrada ${percEntrada}%, prazo ${prazoAnos} ano(s). ` + resumoCenarios.join('; ') + '. São premissas editáveis do SDR, não garantia.';
@@ -658,6 +716,29 @@ document.getElementById('btnSimular').addEventListener('click', renderResultado)
 [valorImovelInput, document.getElementById('percEntrada'), document.getElementById('prazoAnos'), diariaInput].forEach(el => {
   el.addEventListener('keydown', e => { if(e.key === 'Enter') renderResultado(); });
 });
+document.querySelectorAll('#cidadeChips .chip').forEach(ch => {
+  ch.addEventListener('click', () => {
+    document.querySelectorAll('#cidadeChips .chip').forEach(c => c.classList.toggle('ativo', c === ch));
+    const hid = document.getElementById('cidade');
+    hid.value = ch.dataset.v;
+    hid.dispatchEvent(new Event('change'));
+  });
+});
+
+function animarCards(){
+  if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelectorAll('.cenario-valor').forEach(el => {
+    const alvo = parseValorDigitado(el.textContent);
+    if(!alvo) return;
+    const ini = performance.now(), dur = 900;
+    (function passo(t){
+      const p = Math.min(1, (t - ini) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = formatarMoeda(p < 1 ? alvo * e : alvo);
+      if(p < 1) requestAnimationFrame(passo);
+    })(ini);
+  });
+}
+
 document.getElementById('cidade').addEventListener('change', () => {
   if(document.getElementById('resultado').style.display === 'block') renderResultado();
 });
