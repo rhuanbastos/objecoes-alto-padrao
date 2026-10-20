@@ -350,14 +350,25 @@ async function chamarGeminiUmaVez(model, apiKey, parts, opts){
 }
 
 async function chamarGeminiComRetry(model, apiKey, parts, opts){
-  const primeira = await chamarGeminiUmaVez(model, apiKey, parts, opts);
-  if (primeira.texto) return { texto: primeira.texto };
-  if (!primeira.falhaTransitoria) return { erro: primeira.erro };
-
-  await pausar(700);
-  const segunda = await chamarGeminiUmaVez(model, apiKey, parts, opts);
-  if (segunda.texto) return { texto: segunda.texto };
-  return { erro: segunda.erro };
+  // Tenta o modelo principal (com 1 retry se for falha transitória) e, se ainda falhar
+  // (cota por minuto, 429/5xx), cai nos modelos de reserva de GEMINI_FALLBACK_MODELS.
+  const reservas = (process.env.GEMINI_FALLBACK_MODELS || 'gemini-2.5-flash,gemini-2.5-flash-lite')
+    .split(',').map(s => s.trim()).filter(Boolean);
+  const modelos = [model].concat(reservas.filter(m => m !== model));
+  let primeiroErro = null;
+  for (let i = 0; i < modelos.length; i++) {
+    const r = await chamarGeminiUmaVez(modelos[i], apiKey, parts, opts);
+    if (r.texto) return { texto: r.texto };
+    if (!primeiroErro) primeiroErro = r.erro;
+    if (i === 0 && r.falhaTransitoria) {
+      await pausar(700);
+      const r2 = await chamarGeminiUmaVez(modelos[i], apiKey, parts, opts);
+      if (r2.texto) return { texto: r2.texto };
+    } else if (i < modelos.length - 1) {
+      await pausar(400);
+    }
+  }
+  return { erro: primeiroErro };
 }
 
 const { exigirSessao } = require('../lib/auth');
