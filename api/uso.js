@@ -93,6 +93,7 @@ module.exports = async function handler(req, res){
         SUM(acao = 'add_objecao') AS objecoes_adicionadas,
         SUM(acao = 'login') AS logins,
         MAX(criado_em) AS ultimo_acesso,
+MIN(criado_em) AS primeiro_acesso,
         (
           SELECT ul2.detalhe FROM uso_log ul2
           WHERE ul2.email = uso_log.email AND ul2.acao = 'login' AND ul2.detalhe <> ''
@@ -122,7 +123,36 @@ module.exports = async function handler(req, res){
     `);
     const semMatch = agruparSemMatch(semMatchRows);
 
-    res.status(200).json({ porUsuario, recentes, semMatch });
+    // ---- Visão por dia (fuso de Brasília): quem entrou, quantas vezes e o que perguntou ----
+const fmtDia = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' });
+const diaDe = (d) => fmtDia.format(new Date(d));
+const diaPedido = (body && typeof body.dia === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.dia)) ? body.dia : diaDe(new Date());
+const [linhasDia] = await pool.query(`
+SELECT email, acao, detalhe, criado_em
+FROM uso_log
+WHERE criado_em >= (NOW() - INTERVAL 120 DAY)
+ORDER BY criado_em DESC
+LIMIT 8000
+`);
+const diasComUso = new Set();
+const pessoasDia = {};
+linhasDia.forEach(r => {
+const d = diaDe(r.criado_em);
+diasComUso.add(d);
+if (d !== diaPedido) return;
+const p = pessoasDia[r.email] || (pessoasDia[r.email] = { email: r.email, logins: 0, respostas: 0, objecoes_adicionadas: 0, primeiro: r.criado_em, ultimo: r.criado_em, objecoes: [] });
+if (new Date(r.criado_em) < new Date(p.primeiro)) p.primeiro = r.criado_em;
+if (new Date(r.criado_em) > new Date(p.ultimo)) p.ultimo = r.criado_em;
+if (r.acao === 'login') p.logins++;
+else if (r.acao === 'add_objecao') p.objecoes_adicionadas++;
+else if (r.acao === 'responder') {
+p.respostas++;
+p.objecoes.push({ texto: String(r.detalhe || '').replace(/^\[cache\]\s*/, ''), quando: r.criado_em });
+}
+});
+const pessoasDoDia = Object.values(pessoasDia).sort((a, b) => b.respostas - a.respostas || new Date(b.ultimo) - new Date(a.ultimo));
+
+res.status(200).json({ porUsuario, recentes, semMatch, dia: { data: diaPedido, pessoas: pessoasDoDia, diasComUso: [...diasComUso].sort().reverse().slice(0, 30) } });
   } catch (err) {
     res.status(500).json({ error: 'Falha ao buscar estatísticas de uso.', detalhe: String(err && err.message || err) });
   }
