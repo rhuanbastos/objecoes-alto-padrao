@@ -418,6 +418,35 @@
   .btn-ia:not(.sec):hover{transform:translateY(-1px); filter:brightness(1.07); box-shadow:0 14px 26px -12px rgba(242,144,28,.9);}
   footer{color:#3a3936 !important; text-align:center;}
   @media (max-width:640px){ h1{font-size:28px;} .modo-tabs{max-width:100%;} }
+  /* ===== Painel de números por perfil ===== */
+  .modo-tabs{max-width:780px; flex-wrap:wrap;}
+  .modo-tab{font-size:12.5px;}
+  .painel-perfil{margin:26px 0 8px;}
+  .painel-perfil:empty{display:none;}
+  .pp-head{text-align:center; margin-bottom:18px;}
+  .pp-chip{display:inline-block; font-size:11.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; padding:8px 18px; border-radius:999px; color:#000;}
+  .pp-chip.mor{background:linear-gradient(135deg,#7cc4ff,#3b8fe6);}
+  .pp-chip.inv{background:linear-gradient(135deg,#5eeab0,#17b26a);}
+  .pp-chip.ala{background:linear-gradient(135deg,#f6a23a,#e0780f);}
+  .pp-sub{max-width:640px; margin:12px auto 0; font-size:13.5px; line-height:1.6; font-weight:500; color:#2b2a28;}
+  .pp-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px;}
+  .pp-tile{background:#fff; border:1.5px solid #e4e0da; border-radius:18px; padding:20px 22px; transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;}
+  .pp-tile:hover{transform:translateY(-3px); border-color:rgba(242,144,28,.7); background:linear-gradient(160deg,#fff 40%,#fde3bf 100%); box-shadow:0 22px 40px -24px rgba(242,144,28,.5);}
+  .pp-valor{font-size:24px; font-weight:700; letter-spacing:-.02em; color:#0b0b0a; line-height:1.15; font-variant-numeric:tabular-nums;}
+  .pp-rotulo{margin-top:8px; font-size:12.5px; font-weight:700; color:#2b2a28; line-height:1.4;}
+  .pp-nota{margin-top:8px; font-size:12px; line-height:1.55; color:#4a4945;}
+  .pp-tile.destaque{background:linear-gradient(160deg,#1c1c1c,#000); border-color:#000;}
+  .pp-tile.destaque .pp-valor{color:#fff;}
+  .pp-tile.destaque .pp-rotulo{color:#fff;}
+  .pp-tile.destaque .pp-nota{color:rgba(255,255,255,.72);}
+  .pp-tile.destaque:hover{background:linear-gradient(160deg,#242424,#0a0a0a); border-color:var(--orange);}
+  .pp-tile.alerta{border-color:rgba(217,77,47,.55); background:#fff6f3;}
+  .pp-tile.alerta .pp-valor{color:#b3321a;}
+  .pp-tile.alerta:hover{background:#ffeee8; border-color:#d94d2f;}
+  .pp-fontes{margin-top:16px; background:#fff; border:1.5px solid #e4e0da; border-radius:14px; padding:14px 18px;}
+  .pp-fontes summary{cursor:pointer; font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#2b2a28;}
+  .pp-fontes ul{margin:12px 0 0; padding-left:18px; font-size:12.5px; line-height:1.65; color:#3a3936;}
+  @media (max-width:640px){ .modo-tab{flex:1 1 45%;} .pp-valor{font-size:22px;} }
 </style>
 </head>
 <body>
@@ -457,9 +486,10 @@
   <div class="form-card">
     <h2>Monta a simulação</h2>
     <div class="modo-tabs" id="modoTabs" role="tablist">
-      <button type="button" class="modo-tab ativo" data-modo="valorizacao">Valorização na planta</button>
-      <button type="button" class="modo-tab" data-modo="shortstay">Short stay (renda)</button>
-      <button type="button" class="modo-tab" data-modo="moradia">Moradia e alavancagem</button>
+      <button type="button" class="modo-tab" data-modo="moradia">Moradia</button>
+      <button type="button" class="modo-tab ativo" data-modo="valorizacao">Investidor · valorização</button>
+      <button type="button" class="modo-tab" data-modo="shortstay">Investidor · short stay</button>
+      <button type="button" class="modo-tab" data-modo="alavancagem">Alavancagem</button>
     </div>
     <div class="form-grid">
       <div class="field field-cidade">
@@ -500,8 +530,8 @@
         </div>
         <div class="field">
           <label for="ocupacao">Ocupação média</label>
-          <div class="suffix-wrap"><input type="number" id="ocupacao" value="50" min="5" max="100"><span class="suffix">%</span></div>
-          <div class="field-hint">Premissa editável, não é dado confirmado.</div>
+          <div class="suffix-wrap"><input type="number" id="ocupacao" value="45" min="5" max="100"><span class="suffix">%</span></div>
+          <div class="field-hint">Média pública: 34% a 49% ao ano (AirROI e AirDNA, 2026). Premissa editável.</div>
         </div>
         <div class="field">
           <label for="custosGestao">Gestora e custos</label>
@@ -517,8 +547,8 @@
       <div class="modo-extra" id="extraMoradia" hidden>
         <div class="field">
           <label for="rendaFixa">Renda fixa para comparar</label>
-          <div class="suffix-wrap"><input type="number" id="rendaFixa" value="10" min="0" max="30" step="0.5"><span class="suffix">% a.a.</span></div>
-          <div class="field-hint">Premissa editável. Use o CDI/Selic atual líquido que o cliente tem em mente.</div>
+          <div class="suffix-wrap"><input type="number" id="rendaFixa" value="11.6" min="0" max="30" step="0.1"><span class="suffix">% a.a.</span></div>
+          <div class="field-hint">Selic 13,75% (Copom, 16/09/2026): CDI ~13,65% menos 15% de IR dá ~11,6% líquido. Editável.</div>
         </div>
       </div>
 
@@ -544,6 +574,8 @@
   <div id="resultado">
     <div class="resultado-label">Projeção pro prazo e valor informados</div>
     <div class="cenarios-grid" id="cenariosGrid"></div>
+
+    <div class="painel-perfil" id="painelPerfil"></div>
 
     <div class="contexto-card">
       <div class="contexto-label">
@@ -644,7 +676,7 @@ document.querySelectorAll('.modo-tab').forEach(btn => {
     modo = btn.dataset.modo;
     document.querySelectorAll('.modo-tab').forEach(b => b.classList.toggle('ativo', b === btn));
     document.getElementById('extraShortstay').hidden = modo !== 'shortstay';
-    document.getElementById('extraMoradia').hidden = modo !== 'moradia';
+    document.getElementById('extraMoradia').hidden = modo !== 'alavancagem';
     if(document.getElementById('resultado').style.display === 'block') renderResultado();
   });
 });
@@ -696,14 +728,14 @@ function renderResultado(){
       setTimeout(() => { diariaInput.style.borderColor = ''; }, 1200);
       return;
     }
-    const ocup = Math.min(100, Math.max(5, numero('ocupacao', 50))) / 100;
+    const ocup = Math.min(100, Math.max(5, numero('ocupacao', 45))) / 100;
     const custos = Math.min(80, Math.max(0, numero('custosGestao', 30))) / 100;
     const anosLoc = Math.min(10, Math.max(1, Math.round(numero('anosLocacao', 3))));
     const brutaAno = diaria * 365 * ocup;
     const liquidaAno = brutaAno * (1 - custos);
     renda = { diaria, ocup, custos, anosLoc, brutaAno, liquidaAno, liquidaMes: liquidaAno / 12 };
   }
-  const rf = modo === 'moradia' ? Math.max(0, numero('rendaFixa', 10)) / 100 : 0;
+  const rf = Math.max(0, numero('rendaFixa', MERCADO.rfLiquida)) / 100;
 
   const valorEntrada = valorImovel * (percEntrada / 100);
   const taxas = [
@@ -732,6 +764,12 @@ function renderResultado(){
         <div class="cenario-linha retorno"><span>Valorização + renda acumulada</span><strong>+${formatarMoeda(r.ganhoRS + rendaAcum)}</strong></div>`;
       resumoCenarios.push(`${cen.tag} ${formatarPercent(cen.pontos)} a.a.: imóvel ${formatarMoeda(r.valorFinal)}, valorização ${formatarMoeda(r.ganhoRS)}, renda ${formatarMoeda(renda.liquidaMes)}/mês`);
       return cardCenario(cen, prazoAnos, r, linhas);
+    } else if(modo === 'moradia'){
+      const ganhoReal = r.valorFinal / Math.pow(1 + MERCADO.inflacao / 100, prazoAnos) - valorImovel;
+      linhas += `
+        <div class="cenario-linha retorno"><span>Ganho acima da inflação (~${formatarPercent(MERCADO.inflacao)} a.a.)</span><strong>${ganhoReal >= 0 ? '+' : ''}${formatarMoeda(ganhoReal)}</strong></div>`;
+      resumoCenarios.push(`${cen.tag} ${formatarPercent(cen.pontos)} a.a.: imóvel ${formatarMoeda(r.valorFinal)}, valorização ${formatarMoeda(r.ganhoRS)}`);
+      return cardCenario(cen, prazoAnos, r, linhas);
     } else {
       const equivAA = valorEntrada > 0 ? (Math.pow(1 + r.ganhoRS / valorEntrada, 1 / prazoAnos) - 1) * 100 : 0;
       const rfGanho = valorEntrada * (Math.pow(1 + rf, prazoAnos) - 1);
@@ -747,11 +785,150 @@ function renderResultado(){
   }).join('');
   animarCards();
 
-  const nomeModo = { valorizacao:'valorização na planta', shortstay:'short stay', moradia:'moradia e alavancagem' }[modo];
+  const nomeModo = { valorizacao:'investidor, valorização na planta', shortstay:'investidor, short stay', moradia:'moradia', alavancagem:'alavancagem' }[modo];
   ultimoResumo = `Simulação (${nomeModo}) em ${cidade.nome}: imóvel de ${formatarMoeda(valorImovel)}, entrada ${percEntrada}%, prazo ${prazoAnos} ano(s). ` + resumoCenarios.join('; ') + '. São premissas editáveis do SDR, não garantia.';
+
+  const painel = montarPainelPerfil({ modo, cidadeKey, cidade, valorImovel, valorEntrada, percEntrada, prazoAnos, taxaBase, rf, renda });
+  document.getElementById('painelPerfil').innerHTML = painel.html;
+  ultimoResumo += ' ' + painel.resumo;
 
   document.getElementById('resultado').style.display = 'block';
   document.getElementById('resultado').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+/* ---------- Números reais de mercado + painel por perfil (moradia / investidor / alavancagem) ---------- */
+// Referências públicas levantadas em 20/10/2026. Se algum número mudar, atualiza aqui (e no contexto da IA, api/responder.js).
+const MERCADO = {
+  atualizado: '20/10/2026',
+  m2:    { penha:11585, picarras:12687, barravelha:10106 },   // A Corrida dos Bairros, mediana de anúncios (preço pedido), out/2026
+  m2BC: 15228, m2Itapema: 15327,                              // FipeZap, imóveis novos, jun/2026
+  alugM2:{ penha:45.2, picarras:43.1, barravelha:40.2 },      // R$/m²/mês, mediana de anúncios, out/2026
+  selic: 13.75, rfLiquida: 11.6,                              // Copom 16/09/2026; CDI ~13,65% menos 15% de IR
+  incc12m: 6.6,                                               // FGV, set/2026
+  inflacao: 3.2,                                              // em torno, 12 meses até jun/2026
+  financiamento: 11.2                                         // SBPE a partir de, a.a. + TR, jun/2026
+};
+const PERFIL_MODO = { moradia:'moradia', valorizacao:'investimento', shortstay:'investimento', alavancagem:'investimento' };
+function perfilDoModo(m){ return PERFIL_MODO[m] || 'investimento'; }
+
+function pTile(valor, rotulo, nota, tom){
+  return `<div class="pp-tile${tom ? ' ' + tom : ''}"><div class="pp-valor">${valor}</div><div class="pp-rotulo">${rotulo}</div>${nota ? `<div class="pp-nota">${nota}</div>` : ''}</div>`;
+}
+function fmtNum(n, casas){ return n.toLocaleString('pt-BR', { maximumFractionDigits: casas == null ? 0 : casas, minimumFractionDigits: casas == null ? 0 : casas }); }
+function fmtPct(n, casas){ return fmtNum(n, casas == null ? 1 : casas) + '%'; }
+
+// Valorização anual que empata com a renda fixa, considerando que o cliente também investiria na renda fixa
+// cada parcela que paga até a entrega (parcelas iguais, mês a mês, sem a correção do INCC, que subiria o empate).
+function empateRendaFixa(valorImovel, valorEntrada, prazoAnos, rf){
+  const meses = Math.max(1, Math.round(prazoAnos * 12));
+  const parcela = Math.max(0, valorImovel - valorEntrada) / meses;
+  let fv = valorEntrada * Math.pow(1 + rf, prazoAnos);
+  for(let k = 1; k <= meses; k++) fv += parcela * Math.pow(1 + rf, prazoAnos - k / 12);
+  return { fv, taxa: (Math.pow(fv / valorImovel, 1 / prazoAnos) - 1) * 100 };
+}
+
+function montarPainelPerfil(c){
+  const { modo, cidadeKey, cidade, valorImovel, valorEntrada, percEntrada, prazoAnos, taxaBase, rf, renda } = c;
+  const M = MERCADO;
+  const m2Cidade = M.m2[cidadeKey];
+  const descontoBC = (1 - m2Cidade / M.m2BC) * 100;
+  const saldo = Math.max(0, valorImovel - valorEntrada);
+  const taxa = taxaBase / 100;
+  const base = calcularCenario(valorImovel, valorEntrada, taxa, prazoAnos);
+  const rfLiq = rf; // fração (ex.: 0,116)
+  const tiles = [];
+  let titulo = '', sub = '', cor = 'inv', resumo = '';
+
+  if(modo === 'moradia'){
+    titulo = 'Números pra quem vai morar'; cor = 'mor';
+    sub = 'O que o morador quer saber: quanto o dinheiro compra, quanto a obra custa e o que ele deixa de pagar de aluguel.';
+    const m2Eq = valorImovel / m2Cidade;
+    const m2EqBC = valorImovel / M.m2BC;
+    const aluguelMes = m2Eq * M.alugM2[cidadeKey];
+    const parcela = saldo / Math.max(1, prazoAnos * 12);
+    const corr = saldo * (Math.pow(1 + M.incc12m / 100, prazoAnos / 2) - 1);
+    const ganhoReal = base.valorFinal / Math.pow(1 + M.inflacao / 100, prazoAnos) - valorImovel;
+    tiles.push(pTile('~' + fmtNum(m2Eq) + ' m²', 'o que esse valor compra em ' + escapeHtml(cidade.nome), `Preço pedido mediano de apartamentos: R$ ${fmtNum(m2Cidade)}/m² (A Corrida dos Bairros, out/2026).`));
+    tiles.push(pTile('~' + fmtNum(m2EqBC) + ' m²', 'o mesmo valor em Balneário Camboriú', `R$ ${fmtNum(M.m2BC)}/m² (FipeZap, jun/2026). Aqui o m² é ~${fmtNum(descontoBC)}% menor. Bases diferentes: comparação aproximada.`, 'destaque'));
+    tiles.push(pTile('R$ ' + fmtNum(aluguelMes) + '/mês', 'aluguel de mercado de um imóvel desse tamanho', `Estimativa: R$ ${fmtNum(M.alugM2[cidadeKey], 1)}/m² por mês (mediana de anúncios, out/2026). É o que o morador deixa de pagar.`));
+    tiles.push(pTile(formatarMoeda(saldo), 'saldo a pagar depois da entrada de ' + percEntrada + '%', `Dá ~${formatarMoeda(parcela)}/mês em ${prazoAnos * 12} meses, antes da correção. O plano real vem da construtora.`));
+    tiles.push(pTile('+' + formatarMoeda(corr), 'correção estimada do saldo até a entrega (INCC)', `INCC de ${fmtPct(M.incc12m, 2)} em 12 meses (FGV, set/2026). Estimativa pela média do saldo; o closer fecha o fluxo.`));
+    tiles.push(pTile('+' + formatarMoeda(Math.max(0, ganhoReal)), 'ganho do patrimônio acima da inflação (cenário moderado)', `Descontada inflação de ~${fmtPct(M.inflacao)} a.a. É proteção de patrimônio, não promessa.`));
+    tiles.push(pTile('a partir de ' + fmtPct(M.financiamento) + ' a.a. + TR', 'juros do financiamento do saldo (SBPE)', 'Entrada mínima de 20%, até 35 anos (jun/2026). O banco do cliente define a taxa real.'));
+    resumo = `Moradia: valor compra ~${fmtNum(m2Eq)} m² em ${cidade.nome} (R$ ${fmtNum(m2Cidade)}/m²); em Balneário Camboriú compraria ~${fmtNum(m2EqBC)} m²; aluguel equivalente de mercado ~R$ ${fmtNum(aluguelMes)}/mês; saldo ${formatarMoeda(saldo)} corrigido pelo INCC.`;
+  }
+
+  else if(modo === 'valorizacao'){
+    titulo = 'Números pra quem investe em valorização'; cor = 'inv';
+    sub = 'O que o investidor quer saber: quanto o capital dele multiplica, o que sobra depois da correção da obra e contra o que isso compete.';
+    const moic = valorEntrada > 0 ? 1 + base.ganhoRS / valorEntrada : 0;
+    const ganhoAcimaINCC = base.valorFinal - valorImovel * Math.pow(1 + M.incc12m / 100, prazoAnos);
+    const eq = empateRendaFixa(valorImovel, valorEntrada, prazoAnos, rfLiq); const be = eq.taxa;
+    const yieldAlug = M.alugM2[cidadeKey] * 12 / m2Cidade * 100;
+    const alto = taxaBase > 15;
+    tiles.push(pTile(fmtNum(moic, 1) + 'x', 'cada R$ 1 de entrada vira, no cenário moderado', `Efeito de alavancagem: a valorização incide no imóvel inteiro, o cliente desembolsou ${percEntrada}%. Não é taxa garantida.`, 'destaque'));
+    tiles.push(pTile((ganhoAcimaINCC >= 0 ? '+' : '') + formatarMoeda(ganhoAcimaINCC), 'valorização acima da correção da obra (INCC)', `Se o preço é corrigido pelo INCC de ${fmtPct(M.incc12m, 2)} a.a. (FGV, set/2026), isso é o que sobra de ganho real.`));
+    tiles.push(pTile(fmtPct(be) + ' a.a.', 'valorização que empata com a renda fixa', `Se a entrada e cada parcela da obra rendessem na renda fixa líquida de ${fmtPct(rfLiq * 100)} (Selic ${fmtPct(M.selic, 2)}). Sem contar o INCC, que subiria esse empate. À vista, o empate seria ${fmtPct(rfLiq * 100)}.`));
+    tiles.push(pTile(fmtPct(descontoBC, 0) + ' menos', 'no m² frente a Balneário Camboriú', `R$ ${fmtNum(m2Cidade)}/m² aqui contra R$ ${fmtNum(M.m2BC)}/m² (anúncios out/2026 x FipeZap jun/2026, comparação aproximada).`));
+    tiles.push(pTile(fmtPct(yieldAlug) + ' a.a.', 'rendimento bruto do aluguel tradicional', `R$ ${fmtNum(M.alugM2[cidadeKey], 1)}/m² por mês sobre R$ ${fmtNum(m2Cidade)}/m² (anúncios, out/2026). Abaixo da renda fixa: a tese é valorização ou temporada.`));
+    tiles.push(pTile('+2,1% a +8,3%', 'valorização dos últimos 12 meses (FipeZap, jun/2026)', `Itapema +5,25%, Itajaí +4,85%, Balneário Camboriú +2,13%, Florianópolis +8,29%. Penha, Piçarras e Barra Velha não têm índice FipeZap próprio.`, alto ? 'alerta' : ''));
+    if(alto) tiles.push(pTile(fmtPct(taxaBase, 0) + ' a.a.', 'atenção: o cenário moderado está bem acima do último ano', 'Os 20% a 30% são histórico do ciclo de lançamentos de 2020-2021, não previsão. Apresente como faixa, sem prometer.', 'alerta'));
+    resumo = `Investidor (valorização): cada R$ 1 de entrada vira ${fmtNum(moic, 1)}x no cenário moderado; ganho acima do INCC ${formatarMoeda(ganhoAcimaINCC)}; valorização que empata com renda fixa líquida (${fmtPct(rfLiq * 100)}) é ${fmtPct(be)} a.a. com ${percEntrada}% de entrada; FipeZap 12m (jun/2026) de +2,1% a +8,3% nas cidades vizinhas.`;
+  }
+
+  else if(modo === 'shortstay'){
+    titulo = 'Números pra quem investe em renda de temporada'; cor = 'inv';
+    sub = 'O que o investidor quer saber: quanto rende sobre o valor do imóvel, em quanto tempo volta a entrada e se a ocupação usada é realista.';
+    const yieldLiq = renda.liquidaAno / valorImovel * 100;
+    const payback = valorEntrada > 0 && renda.liquidaAno > 0 ? valorEntrada / renda.liquidaAno : 0;
+    const ocupPct = renda.ocup * 100;
+    const yieldAlug = M.alugM2[cidadeKey] * 12 / m2Cidade * 100;
+    tiles.push(pTile(fmtPct(yieldLiq) + ' a.a.', 'renda líquida sobre o valor do imóvel hoje', `Renda líquida estimada de ${formatarMoeda(renda.liquidaAno)}/ano. Renda fixa líquida: ${fmtPct(rfLiq * 100)}.`, yieldLiq < rfLiq * 100 ? 'alerta' : 'destaque'));
+    tiles.push(pTile(fmtNum(payback, 1) + ' anos', 'de renda líquida pra cobrir a entrada', 'Só conta depois da entrega e com a ocupação informada.'));
+    tiles.push(pTile(fmtPct(ocupPct, 0), 'ocupação que você usou', 'Média pública: 34% a 49% ao ano (AirROI ago/2025 a jul/2026 e AirDNA out/2026, todas as unidades). Unidade bem gerida pode ficar acima.', ocupPct > 50 ? 'alerta' : ''));
+    tiles.push(pTile('US$ 7,4 mil a 10,8 mil', 'receita bruta anual média por anúncio (Penha e Piçarras)', 'Média de todos os anúncios, inclusive unidades pequenas. Em dólar, como as plataformas publicam. Barra Velha: sem dado público confiável.'));
+    tiles.push(pTile('46% x 29%', 'ocupação no verão x na baixa (Penha)', 'Dezembro a fevereiro x junho, agosto e setembro (AirROI). A renda se concentra no verão.'));
+    tiles.push(pTile(fmtPct(yieldAlug) + ' a.a.', 'aluguel tradicional, pra comparar', `Rendimento bruto na ${escapeHtml(cidade.nome)} (anúncios, out/2026). A temporada só compensa pela renda acima disso, com mais trabalho de gestão.`));
+    resumo = `Investidor (short stay): renda líquida de ${fmtPct(yieldLiq)} a.a. sobre o valor do imóvel (renda fixa líquida ${fmtPct(rfLiq * 100)}); entrada volta em ${fmtNum(payback, 1)} anos de renda; ocupação usada ${fmtPct(ocupPct, 0)} contra média pública de 34% a 49%.`;
+  }
+
+  else {
+    titulo = 'Números pra quem pensa em alavancagem'; cor = 'ala';
+    sub = 'O que quem alavanca quer saber: quanto multiplica, onde empata com a renda fixa e o que acontece se o imóvel não valorizar.';
+    const moic = valorEntrada > 0 ? 1 + base.ganhoRS / valorEntrada : 0;
+    const equiv = valorEntrada > 0 ? (Math.pow(1 + base.ganhoRS / valorEntrada, 1 / prazoAnos) - 1) * 100 : 0;
+    const eq = empateRendaFixa(valorImovel, valorEntrada, prazoAnos, rfLiq); const be = eq.taxa;
+    const jurosRF = eq.fv - valorImovel;
+    const queda = valorImovel * 0.10;
+    const quedaPct = valorEntrada > 0 ? queda / valorEntrada * 100 : 0;
+    tiles.push(pTile(fmtNum(moic, 1) + 'x', 'múltiplo sobre o capital da entrada, no cenário moderado', `Entrada de ${formatarMoeda(valorEntrada)} (${percEntrada}%) e valorização de ${formatarMoeda(base.ganhoRS)} sobre o imóvel inteiro. As parcelas da obra não entram nessa conta: é efeito de alavancagem, não retorno garantido.`, 'destaque'));
+    tiles.push(pTile(fmtPct(equiv) + ' a.a.', 'equivale, ao ano, sobre a entrada', `Só a entrada entra no cálculo. Por isso parece alto: o cliente ainda paga ${formatarMoeda(saldo)} em parcelas até a entrega. Renda fixa líquida: ${fmtPct(rfLiq * 100)}.`));
+    tiles.push(pTile(fmtPct(be) + ' a.a.', 'valorização mínima pra empatar com a renda fixa', `Considerando que a entrada e cada parcela também renderiam na renda fixa líquida de ${fmtPct(rfLiq * 100)} (Selic ${fmtPct(M.selic, 2)}). Sem contar o INCC, que subiria esse empate.`));
+    tiles.push(pTile('-' + formatarMoeda(queda), 'se o imóvel cair 10%', `Equivale a ${fmtPct(quedaPct, 0)} da entrada. A alavancagem multiplica o ganho e também a perda.`, 'alerta'));
+    tiles.push(pTile('+' + formatarMoeda(jurosRF), 'se o imóvel não valorizar, o que a renda fixa teria rendido', 'Juros da renda fixa líquida sobre a entrada e as parcelas até a entrega: é o custo de oportunidade de comprar.'));
+    tiles.push(pTile('a partir de ' + fmtPct(M.financiamento) + ' a.a. + TR', 'custo de alavancar com financiamento (SBPE)', `Maior que a valorização dos últimos 12 meses no litoral (+2,1% a +8,3%, FipeZap jun/2026). Na planta o saldo corre pelo INCC (${fmtPct(M.incc12m, 2)} a.a.), que é menor.`));
+    resumo = `Alavancagem: múltiplo de ${fmtNum(moic, 1)}x sobre a entrada no cenário moderado (só a entrada entra na conta, parcelas não); empata com renda fixa líquida de ${fmtPct(rfLiq * 100)} (entrada e parcelas investidas) se valorizar ${fmtPct(be)} a.a.; queda de 10% do imóvel = perda de ${fmtPct(quedaPct, 0)} da entrada.`;
+  }
+
+  const html = `
+    <div class="pp-head">
+      <span class="pp-chip ${cor}">${escapeHtml(titulo)}</span>
+      <p class="pp-sub">${escapeHtml(sub)}</p>
+    </div>
+    <div class="pp-grid">${tiles.join('')}</div>
+    <details class="pp-fontes">
+      <summary>De onde vêm esses números (consultados em ${escapeHtml(M.atualizado)})</summary>
+      <ul>
+        <li>Preço pedido do m² e aluguel por m²: A Corrida dos Bairros, mediana de anúncios públicos, out/2026. É preço pedido, não preço de venda fechado.</li>
+        <li>Balneário Camboriú e Itapema, e valorização de 12 meses: FipeZap, jun/2026 (imóveis novos).</li>
+        <li>Selic de 13,75% ao ano: Copom, 16/09/2026. Renda fixa líquida de ~11,6% é o CDI (~13,65%) menos 15% de IR, conta nossa.</li>
+        <li>INCC de ${fmtPct(M.incc12m, 2)} em 12 meses: FGV, set/2026.</li>
+        <li>Financiamento (SBPE) a partir de ~11,2% a.a. + TR, entrada mínima de 20%: referência de jun/2026; cada banco define a taxa real.</li>
+        <li>Temporada: AirROI (Penha, ago/2025 a jul/2026) e AirDNA (Penha e Piçarras, out/2026). As fontes divergem; use como faixa.</li>
+        <li>Tudo isso é referência pública pro SDR, não garantia. Os números do empreendimento quem confirma é o closer.</li>
+      </ul>
+    </details>`;
+  return { html, resumo };
 }
 
 function cardCenario(cen, prazoAnos, r, linhas){
@@ -802,15 +979,21 @@ const iaStatus = document.getElementById('iaStatus');
 btnIA.addEventListener('click', async () => {
   const pergunta = document.getElementById('iaPergunta').value.trim();
   if(!pergunta){ iaStatus.textContent = 'Escreva a dúvida do cliente primeiro.'; return; }
-  let texto = ultimoResumo + ' Dúvida do cliente: ' + pergunta;
-  if(texto.length > 1150) texto = texto.slice(0, 1150);
+  const sufixo = ' Dúvida do cliente: ' + pergunta;
+  const texto = ultimoResumo.slice(0, Math.max(200, 1150 - sufixo.length)) + sufixo;
   btnIA.disabled = true; iaStatus.textContent = 'Gerando...'; iaResposta.style.display = 'none'; btnCopiarIA.style.display = 'none';
+  document.querySelectorAll('#iaCard .ia-ref').forEach(n => n.remove());
   try{
-    const r = await fetch('api/responder', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ objecao: texto }) });
+    const r = await fetch('api/responder', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ objecao: texto, perfil: perfilDoModo(modo) }) });
     const dados = await r.json().catch(() => ({}));
     if(!r.ok) throw new Error(dados.error || 'Não consegui gerar agora.');
     iaResposta.textContent = dados.resposta || '';
     iaResposta.style.display = 'block'; btnCopiarIA.style.display = 'inline-block'; iaStatus.textContent = '';
+    if(typeof montarConversaIA === 'function') montarConversaIA({
+      anexarEm: document.getElementById('iaCard'), objecao: texto, resposta: dados.resposta || '', getPerfil: () => perfilDoModo(modo),
+      getTexto: () => iaResposta.textContent,
+      setTexto: (t) => { iaResposta.textContent = t; }
+    });
   } catch(err){
     iaStatus.textContent = (err && err.message) || 'Não consegui gerar agora. Tenta de novo.';
   }
@@ -974,5 +1157,6 @@ function liberarFerramenta(email, nome){
 })();
 </script>
 
+<script src="conversa-ia.js"></script>
 </body>
 </html>
