@@ -549,6 +549,26 @@
   .card-head{padding:20px 22px 16px !important; flex:1 1 auto; display:flex; flex-direction:column;}
   .card-toggle-row{justify-content:flex-end !important; margin-top:auto !important; padding-top:12px;}
   @media (max-width:640px){ h1{font-size:28px;} .ia-note{font-size:12px; padding:11px 14px;} .search-wrap input{padding-left:46px !important;} }
+  /* ===== Perfil do lead: Moradia / Investimento ===== */
+  .perfil-row{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; margin:0 auto 6px; max-width:820px;}
+  .perfil-label{font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.85); margin-right:4px;}
+  .perfil-btn{display:inline-flex; align-items:center; gap:9px; font-family:inherit; font-weight:700; font-size:13.5px; padding:11px 22px; border-radius:14px; border:1.5px solid; cursor:pointer; background:rgba(255,255,255,.06); color:#fff; transition:all .2s;}
+  .perfil-btn svg{flex:0 0 auto;}
+  .perfil-btn.moradia{border-color:rgba(91,171,255,.75);}
+  .perfil-btn.moradia svg{color:#7cc4ff;}
+  .perfil-btn.moradia:hover, .perfil-btn.moradia.ativo{background:linear-gradient(135deg,#7cc4ff,#3b8fe6); border-color:transparent; color:#04121f; box-shadow:0 12px 26px -12px rgba(59,143,230,.95);}
+  .perfil-btn.investimento{border-color:rgba(52,211,153,.75);}
+  .perfil-btn.investimento svg{color:#5eeab0;}
+  .perfil-btn.investimento:hover, .perfil-btn.investimento.ativo{background:linear-gradient(135deg,#5eeab0,#17b26a); border-color:transparent; color:#03160d; box-shadow:0 12px 26px -12px rgba(23,178,106,.95);}
+  .perfil-btn:hover svg, .perfil-btn.ativo svg{color:inherit;}
+  .perfil-btn:hover{transform:translateY(-1px);}
+  .perfil-btn.ativo{transform:translateY(-1px);}
+  .perfil-dica{width:100%; text-align:center; font-size:12px; font-weight:500; color:rgba(255,255,255,.7); margin:6px 0 16px; min-height:16px; transition:color .2s;}
+  .perfil-row.tem-perfil + .perfil-dica{color:rgba(255,255,255,.95);}
+  header.top.compact .perfil-label, header.top.compact .perfil-dica{display:none;}
+  header.top.compact .perfil-btn{padding:6px 14px; font-size:12px;}
+  header.top.compact .perfil-row{margin-bottom:8px;}
+  @media (max-width:640px){ .perfil-btn{flex:1 1 40%; justify-content:center; padding:10px 12px;} .perfil-label{width:100%; text-align:center; margin:0 0 2px;} }
 </style>
 </head>
 <body>
@@ -584,6 +604,18 @@
         <h1 class="hero-anim" id="e2">Quebra de objeções, no tom certo.</h1>
         <p class="subtitle hero-anim" id="e3">Cola a objeção que o cliente mandou no WhatsApp (ou busca por palavra-chave) e a resposta pronta aparece na hora, curta, no tom certo, sem enrolação.</p>
 
+        <div class="perfil-row" id="perfilRow">
+          <span class="perfil-label">Perfil do lead</span>
+          <button type="button" class="perfil-btn moradia" data-perfil="moradia" aria-pressed="false">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>
+            Moradia
+          </button>
+          <button type="button" class="perfil-btn investimento" data-perfil="investimento" aria-pressed="false">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg>
+            Investimento
+          </button>
+        </div>
+        <div class="perfil-dica" id="perfilDica"></div>
         <div class="controls hero-anim" id="e4">
           <div class="search-wrap" id="searchWrap">
             <svg class="search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -593,7 +625,7 @@
           <div class="stat-pill" id="statPill"><strong>15</strong> objeções documentadas</div>
           <button type="button" class="ia-quick-btn" id="iaQuickBtn" style="display:none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-            Gerar com IA mesmo assim
+            <span id="iaQuickLabel">Gerar com IA mesmo assim</span>
           </button>
         </div>
         <div class="hint-row">Cola a frase inteira pra achar mais rápido · atalho <kbd>/</kbd> foca a busca</div>
@@ -1045,6 +1077,37 @@ function renderCard(item, idx){
   return card;
 }
 
+/* ---------- Perfil do lead (Moradia / Investimento): a IA responde conforme o perfil ---------- */
+let perfilLead = '';
+const NOME_PERFIL = { moradia:'Moradia', investimento:'Investimento' };
+function atualizarPerfilUI(){
+  document.querySelectorAll('.perfil-btn').forEach(b => {
+    const on = b.dataset.perfil === perfilLead;
+    b.classList.toggle('ativo', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  const row = document.getElementById('perfilRow');
+  if(row) row.classList.toggle('tem-perfil', !!perfilLead);
+  const dica = document.getElementById('perfilDica');
+  if(dica){
+    dica.textContent = perfilLead === 'moradia'
+      ? 'A IA vai responder pensando em quem quer MORAR: qualidade de vida, custo de morar x alugar, patrimônio da família.'
+      : perfilLead === 'investimento'
+        ? 'A IA vai responder pensando em quem quer INVESTIR: valorização, renda, comparação com renda fixa e alavancagem.'
+        : 'Escolha o perfil do lead pra IA responder do jeito certo (opcional).';
+  }
+  const lbl = document.getElementById('iaQuickLabel');
+  if(lbl) lbl.textContent = perfilLead ? 'Gerar com IA · perfil ' + NOME_PERFIL[perfilLead] : 'Gerar com IA mesmo assim';
+}
+document.querySelectorAll('.perfil-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    perfilLead = perfilLead === btn.dataset.perfil ? '' : btn.dataset.perfil;
+    atualizarPerfilUI();
+    if(query && query.trim()) renderAll();
+  });
+});
+atualizarPerfilUI();
+
 const AI_ENDPOINT = 'api/responder';
 const ADD_ENDPOINT = 'api/add-objecao';
 const OBJECOES_ENDPOINT = 'api/objecoes';
@@ -1252,6 +1315,11 @@ function renderAICallout(objecaoText, respostaTexto){
   const addBtn = aiBody.querySelector('[data-add]');
   addBtn.addEventListener('click', () => salvarObjecaoNaBase(objecaoText, textoAtualDaResposta(aiBody, respostaTexto), addBtn));
   tipografarResposta(aiBody.querySelector('#aiScriptBox'), respostaTexto, 12);
+  if(typeof montarConversaIA === 'function') montarConversaIA({
+    anexarEm: aiBody, objecao: objecaoText, resposta: respostaTexto, getPerfil: () => perfilLead,
+    getTexto: () => textoAtualDaResposta(aiBody, ''),
+    setTexto: (t, animar) => { const b = aiBody.querySelector('#aiScriptBox'); if(animar) tipografarResposta(b, t, 10); else b.textContent = t; }
+  });
   return el;
 }
 
@@ -1272,7 +1340,7 @@ async function tryAIFallback(objecaoText, myToken){
     const r = await fetch(AI_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ objecao: objecaoText })
+      body: JSON.stringify({ objecao: objecaoText, perfil: perfilLead })
     });
     if(myToken !== searchToken) return; // usuário já mudou a busca, descarta essa resposta
 
@@ -1358,6 +1426,11 @@ function renderAudioCallout(transcricao, respostaTexto){
   wireCopy(body, aiItem);
   const addBtn = body.querySelector('[data-add]');
   addBtn.addEventListener('click', () => salvarObjecaoNaBase(transcricao || 'Objeção recebida por áudio', textoAtualDaResposta(body, respostaTexto), addBtn));
+  if(typeof montarConversaIA === 'function') montarConversaIA({
+    anexarEm: body, objecao: transcricao || 'O cliente mandou um áudio com uma objeção (sem transcrição disponível).', resposta: respostaTexto, getPerfil: () => perfilLead,
+    getTexto: () => textoAtualDaResposta(body, ''),
+    setTexto: (t, animar) => { const b = body.querySelector('.script-box'); if(animar) tipografarResposta(b, t, 10); else b.textContent = t; }
+  });
   return el;
 }
 
@@ -1396,7 +1469,7 @@ async function processarAudio(base64, mimeType){
     const r = await fetch(AI_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ audioBase64: base64, audioMimeType: mimeType })
+      body: JSON.stringify({ audioBase64: base64, audioMimeType: mimeType, perfil: perfilLead })
     });
     if(myToken !== searchToken) return;
 
@@ -1722,5 +1795,6 @@ function animarEntradaHero(){
 })();
 </script>
 
+<script src="conversa-ia.js"></script>
 </body>
 </html>
