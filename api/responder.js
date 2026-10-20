@@ -102,7 +102,19 @@ SIMULADOR DE VALORIZAÇÃO (ferramenta interna dos SDRs; o SDR escolhe a cidade,
 - MORADIA / ALAVANCAGEM: o cliente mora (ou usa) o imóvel e, no mesmo tempo, o patrimônio valoriza. Alavancagem = valorização do imóvel inteiro comparada com o dinheiro que realmente saiu do bolso (entrada). Vale comparar com o rendimento que a mesma entrada teria na renda fixa, deixando claro que são riscos e liquidez diferentes.
 REGRAS PARA ESSAS RESPOSTAS: use as taxas, ocupação e diárias que o SDR informar na pergunta; se ele não informar, não invente, use só o que está no HISTÓRICO acima (20% a 30% ao ano é o histórico documentado da Tríade como um todo, NÃO uma promessa nem uma média separada por cidade) e diga que o closer fecha os números. Sempre reforce que é simulação, não garantia, e que o closer confirma os valores reais.
 
-Ao responder uma objeção, se o contexto pedir um exemplo concreto de empreendimento, escolha o que combina com o que o cliente quer (moradia x investimento x renda por temporada) em vez de citar todos.`;
+Ao responder uma objeção, se o contexto pedir um exemplo concreto de empreendimento, escolha o que combina com o que o cliente quer (moradia x investimento x renda por temporada) em vez de citar todos.
+
+NÚMEROS REAIS DE MERCADO (consultados em outubro/2026; são referência pro SDR, cite a fonte se perguntarem, e nunca prometa retorno):
+- Preço pedido do m² de apartamentos (mediana de anúncios, A Corrida dos Bairros, out/2026; é preço pedido, não preço de venda fechado): Balneário Piçarras R$ 12.687; Penha R$ 11.585; Barra Velha R$ 10.106. Pontos mais caros: Armação (Piçarras) R$ 14.684, Centro de Piçarras R$ 13.439, Beira Mar de Barra Velha R$ 14.224.
+- Comparação indicativa (fontes diferentes, vale a ordem de grandeza): o m² de Balneário Camboriú é R$ 15.228 e o de Itapema R$ 15.327 (FipeZap, jun/2026). Piçarras fica cerca de 17% abaixo de Balneário Camboriú, Penha cerca de 24% abaixo e Barra Velha cerca de 34% abaixo.
+- Aluguel residencial tradicional (mediana de anúncios, out/2026): Penha R$ 45,2/m² por mês; Piçarras R$ 43,1/m²; Barra Velha R$ 40,2/m². Isso dá um rendimento bruto de aluguel tradicional de aproximadamente 4% a 4,8% ao ano sobre o valor do imóvel, bem abaixo da renda fixa. Por isso a tese do investidor depende de valorização e/ou de renda de temporada, e a do morador é mais sobre o custo de morar.
+- Renda fixa: Selic em 13,75% ao ano (Copom, 16/09/2026) e CDI perto de 13,65%. Descontado o IR (15% para prazos acima de 2 anos), fica em torno de 11,6% ao ano líquido.
+- Financiamento (SBPE, referência jun/2026): juros a partir de ~11,2% ao ano + TR, até 80% do imóvel, entrada mínima de 20%, prazo de até 35 anos, parcela de até 30% da renda. Quem financia paga juro maior que a valorização recente do litoral, então alavancar com financiamento só fecha com renda de aluguel ou valorização acima disso.
+- Valorização recente (FipeZap, 12 meses até jun/2026): Itapema +5,25%, Itajaí +4,85%, Balneário Camboriú +2,13%, Florianópolis +8,29%, índice de 56 cidades +5,59%; inflação em torno de 3,2% no período. Penha, Piçarras e Barra Velha não têm índice FipeZap próprio. O litoral catarinense desacelerou em 2026 depois do ciclo forte de 2020-2021; os 20% a 30% ao ano e os 50% a 60% de 2020-2021 são histórico daquele ciclo, NÃO previsão. Se o cliente falar em bolha ou desaceleração, reconheça que o ritmo esfriou, mostre o preço de entrada mais baixo que Balneário Camboriú e que a decisão certa é olhar prazo longo, localização e construtora, sem prometer número.
+- Temporada em Penha (AirROI, anúncios do Airbnb de ago/2025 a jul/2026): diária média ~US$ 93, ocupação média 34,1% (46,1% no verão e 29,1% na baixa) e receita média de ~US$ 7,4 mil por ano por anúncio, antes de taxas, limpeza, condomínio e impostos. Corretoras divulgam 9% a 12% ao ano de rentabilidade em Piçarras (diária ~R$ 300, ocupação 60%, gestão 25%); trate isso como estimativa otimista, não média comprovada. Unidades bem localizadas e com gestão profissional tendem a ficar acima da média.
+- INCC acumulado em 12 meses: 6,60% (set/2026, FGV). É o índice que corrige as parcelas de imóvel na planta durante a obra, então o saldo a pagar sobe um pouco todo ano até a entrega.
+- Temporada, segunda fonte (AirDNA, 13/10/2026, média de todos os anúncios): Piçarras com ocupação de 45% e diária média de US$ 85; Penha com ocupação de 49% e diária de US$ 70; receita bruta anual média por anúncio de ~US$ 10,6 mil (Piçarras) e ~US$ 10,8 mil (Penha). As fontes divergem em Penha (34% a 49% de ocupação), então apresente como faixa. Barra Velha: sem dado público confiável.
+REGRA: use esses números só quando ajudarem a responder; não despeje todos. Se o cliente pedir um número que não está aqui, diga que o closer confirma.`;
 
 const REGRAS_DE_TOM = `Você é um closer experiente da Águia Consultoria Imobiliária, especializada em imóveis de alto padrão na planta no litoral norte de Santa Catarina (Penha, Balneário Piçarras e Barra Velha), respondendo a objeção de um cliente numa conversa de WhatsApp. Sua resposta vai ser copiada e colada direto na conversa. Ela PRECISA soar como uma pessoa real digitando rápido, nunca como um assistente de IA.
 
@@ -118,7 +130,22 @@ REGRAS DE TOM (siga à risca):
 - Contexto do negócio: imóveis de alto padrão, clientes de alta renda, decisões que costumam envolver due diligence (advogados, family offices, cônjuges), preocupação real com discrição e reputação.
 - Devolva SOMENTE o texto da resposta, pronto pra colar. Nada de aspas, nada de "Resposta:", nada de comentário extra.`;
 
-function montarPrompt(objecaoCliente){
+// Perfil do lead escolhido pelo SDR nos botões Moradia / Investimento.
+function blocoPerfil(perfil){
+  if (perfil === 'moradia') {
+    return `PERFIL DO LEAD: MORADIA. O cliente quer comprar pra MORAR (ou casa de praia da família). A resposta precisa falar de qualidade de vida, rotina, segurança, mar, serviços por perto, prazo de entrega e da conta de morar (o aluguel que ele deixa de pagar, a parcela que cabe na renda, o patrimônio que fica pra família). NÃO use short stay, rentabilidade de aluguel nem alavancagem como argumento principal; valorização entra só como proteção do patrimônio, sem prometer retorno. Se a objeção for de preço, fale do custo de morar x alugar e chame o closer pras condições de pagamento.
+
+`;
+  }
+  if (perfil === 'investimento') {
+    return `PERFIL DO LEAD: INVESTIMENTO. O cliente quer RETORNO. A resposta precisa falar de valorização, renda de temporada, comparação com a renda fixa (Selic/CDI), alavancagem sobre a entrada, liquidez, risco de obra/entrega e gestão profissional, usando os números reais do contexto com honestidade: mostre onde a tese ganha e onde ela depende de premissa. Nunca prometa retorno e nunca apresente 20% a 30% ao ano como previsão.
+
+`;
+  }
+  return '';
+}
+
+function montarPrompt(objecaoCliente, perfil){
   const exemplosTexto = EXEMPLOS
     .map(ex => `Objeção: "${ex.objecao}"\nResposta: ${ex.resposta}`)
     .join('\n\n---\n\n');
@@ -133,17 +160,43 @@ ${exemplosTexto}
 
 ---
 
-Agora responda, no mesmo estilo dos exemplos acima, usando o contexto de mercado quando fizer sentido, a objeção abaixo:
+${blocoPerfil(perfil)}Agora responda, no mesmo estilo dos exemplos acima, usando o contexto de mercado quando fizer sentido, a objeção abaixo:
 
 Objeção: "${objecaoCliente}"
 Resposta:`;
+}
+
+// "Gerar outra": mesmo prompt, mas avisando quais respostas já foram dadas e pedindo
+// um ângulo diferente (outro argumento, outra abertura, outra pergunta de fechamento).
+function montarPromptOutra(objecaoCliente, anteriores, perfil){
+  const lista = anteriores.map((t, i) => `Versão ${i + 1}: ${t}`).join('\n\n');
+  return montarPrompt(objecaoCliente, perfil).replace(/\nResposta:$/, `
+IMPORTANTE: já foram sugeridas as respostas abaixo e o SDR NÃO quer repetir. Escreva uma resposta NOVA, com outro ângulo (outro argumento, outra abertura e outra pergunta de fechamento), sem copiar frases das versões abaixo, mantendo todas as regras de tom e os dados reais do contexto.
+
+${lista}
+
+Nova resposta:`);
+}
+
+// Continuação de conversa: o SDR conversa com a IA sobre a mesma objeção (pede ajuste,
+// pergunta algo, traz a próxima objeção do cliente). Reaproveita o prompt completo no
+// primeiro turno e manda o histórico como turnos reais de chat.
+function montarContentsConversa(objecaoCliente, historico, mensagem, perfil){
+  const contents = [{ role: 'user', parts: [{ text: montarPrompt(objecaoCliente, perfil) }] }];
+  // historico[0] é a própria objeção (já coberta pelo prompt completo); o resto alterna model/user
+  historico.slice(1).forEach(h => contents.push({ role: h.role, parts: [{ text: h.text }] }));
+  contents.push({ role: 'user', parts: [{ text:
+`O SDR agora escreveu: "${mensagem}"
+
+Responda mantendo as regras de tom e os dados reais do contexto. Se ele pediu ajuste ou nova versão da mensagem pro cliente (mais curta, mais direta, outro tom, etc.), devolva SÓ a nova versão pronta pra colar no WhatsApp. Se for a próxima fala do cliente, responda pro cliente no mesmo estilo, pronta pra colar. Se for uma dúvida do próprio SDR (não um texto pro cliente), responda de forma curta e direta falando com ele, sem enrolação.` }] });
+  return contents;
 }
 
 // Mesma lógica do montarPrompt, mas pro caso de áudio: em vez de já receber o texto
 // da objeção, o SDR manda o áudio (print de voz do WhatsApp) e o Gemini primeiro
 // transcreve, depois responde. Pedimos os dois num formato com marcador fixo
 // (TRANSCRICAO: / RESPOSTA:) pra dar pra separar depois com regex no servidor.
-function montarPromptAudio(){
+function montarPromptAudio(perfil){
   const exemplosTexto = EXEMPLOS
     .map(ex => `Objeção: "${ex.objecao}"\nResposta: ${ex.resposta}`)
     .join('\n\n---\n\n');
@@ -158,7 +211,7 @@ ${exemplosTexto}
 
 ---
 
-Agora ouça o áudio anexado (é um print de voz que um cliente mandou pro SDR pelo WhatsApp, com uma objeção sobre comprar imóvel). Faça duas coisas, nessa ordem, EXATAMENTE no formato abaixo, sem nenhum texto antes ou depois:
+${blocoPerfil(perfil)}Agora ouça o áudio anexado (é um print de voz que um cliente mandou pro SDR pelo WhatsApp, com uma objeção sobre comprar imóvel). Faça duas coisas, nessa ordem, EXATAMENTE no formato abaixo, sem nenhum texto antes ou depois:
 
 TRANSCRICAO: <transcreva o áudio literalmente, palavra por palavra, em português. Se tiver algum trecho inaudível, marque como (inaudível) nesse trecho, mas transcreva o resto normalmente.>
 RESPOSTA: <no mesmo estilo dos exemplos acima e seguindo as regras de tom à risca, a resposta pronta pra colar no WhatsApp para a objeção que você ouviu no áudio>`;
@@ -247,7 +300,8 @@ function pausar(ms){
 // Faz uma tentativa de chamada ao Gemini. Devolve { texto } em caso de sucesso,
 // ou { falhaTransitoria, erro } em caso de falha (pra quem chamou decidir se
 // vale a pena tentar de novo).
-async function chamarGeminiUmaVez(model, apiKey, parts){
+async function chamarGeminiUmaVez(model, apiKey, parts, opts){
+  opts = opts || {};
   try {
     const resposta = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -255,10 +309,10 @@ async function chamarGeminiUmaVez(model, apiKey, parts){
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{ parts }],
+          contents: opts.contents || [{ parts }],
           generationConfig: {
-            temperature: 0.8,
-            maxOutputTokens: 500,
+            temperature: opts.temperature || 0.8,
+            maxOutputTokens: opts.maxOutputTokens || 500,
             thinkingConfig: { thinkingBudget: 0 }
           }
         })
@@ -295,13 +349,13 @@ async function chamarGeminiUmaVez(model, apiKey, parts){
   }
 }
 
-async function chamarGeminiComRetry(model, apiKey, parts){
-  const primeira = await chamarGeminiUmaVez(model, apiKey, parts);
+async function chamarGeminiComRetry(model, apiKey, parts, opts){
+  const primeira = await chamarGeminiUmaVez(model, apiKey, parts, opts);
   if (primeira.texto) return { texto: primeira.texto };
   if (!primeira.falhaTransitoria) return { erro: primeira.erro };
 
   await pausar(700);
-  const segunda = await chamarGeminiUmaVez(model, apiKey, parts);
+  const segunda = await chamarGeminiUmaVez(model, apiKey, parts, opts);
   if (segunda.texto) return { texto: segunda.texto };
   return { erro: segunda.erro };
 }
@@ -332,6 +386,16 @@ module.exports = async function handler(req, res) {
   const audioBase64 = body && typeof body.audioBase64 === 'string' ? body.audioBase64 : '';
   const audioMimeType = body && typeof body.audioMimeType === 'string' ? body.audioMimeType : '';
   const ehAudio = !!audioBase64;
+  const regenerar = !!(body && body.regenerar === true);
+  const anteriores = (body && Array.isArray(body.anteriores) ? body.anteriores : [])
+    .filter(t => typeof t === 'string' && t.trim()).slice(-6).map(t => t.trim().slice(0, 1500));
+  const perfil = body && (body.perfil === 'moradia' || body.perfil === 'investimento') ? body.perfil : '';
+  const mensagem = body && typeof body.mensagem === 'string' ? body.mensagem.trim() : '';
+  const historico = (body && Array.isArray(body.historico) ? body.historico : [])
+    .filter(h => h && (h.role === 'user' || h.role === 'model') && typeof h.text === 'string' && h.text.trim())
+    .slice(-13).map(h => ({ role: h.role, text: h.text.trim().slice(0, 2500) }));
+  const ehConversa = !ehAudio && !!mensagem && historico.length >= 2;
+  const ehOutra = !ehAudio && !ehConversa && regenerar;
 
   if (!ehAudio && !objecao) {
     res.status(400).json({ error: 'Envie { "objecao": "texto do cliente" } (ou um áudio) no corpo da requisição.' });
@@ -339,6 +403,10 @@ module.exports = async function handler(req, res) {
   }
   if (!ehAudio && objecao.length > 1200) {
     res.status(400).json({ error: 'Objeção muito longa. Cole só a parte relevante da mensagem do cliente.' });
+    return;
+  }
+  if (mensagem.length > 800) {
+    res.status(400).json({ error: 'Mensagem muito longa. Resuma o que você quer ajustar ou perguntar.' });
     return;
   }
   if (ehAudio && !audioMimeType) {
@@ -359,7 +427,7 @@ module.exports = async function handler(req, res) {
   // nunca pode travar por causa disso — só ignora o cache e segue pro Gemini
   // normalmente, como se o cache nem existisse.
   const tokensQuery = ehAudio ? [] : tokenizarObjecaoCache(objecao);
-  if (!ehAudio && tokensQuery.length >= 2) {
+  if (!ehAudio && !ehConversa && !ehOutra && !perfil && tokensQuery.length >= 2) {
     try {
       const cacheRows = await buscarRespostasCacheDeHoje();
       const respostaCacheada = encontrarNoCache(tokensQuery, cacheRows);
@@ -377,13 +445,16 @@ module.exports = async function handler(req, res) {
 
   const parts = ehAudio
     ? [
-        { text: montarPromptAudio() },
+        { text: montarPromptAudio(perfil) },
         { inlineData: { mimeType: audioMimeType, data: audioBase64 } }
       ]
-    : [{ text: montarPrompt(objecao) }];
+    : [{ text: ehOutra ? montarPromptOutra(objecao, anteriores, perfil) : montarPrompt(objecao, perfil) }];
+  const opts = ehConversa
+    ? { contents: montarContentsConversa(objecao, historico, mensagem, perfil), temperature: 0.9, maxOutputTokens: 700 }
+    : ehOutra ? { temperature: 1.0 } : {};
 
   try {
-    const { texto, erro } = await chamarGeminiComRetry(model, apiKey, parts);
+    const { texto, erro } = await chamarGeminiComRetry(model, apiKey, parts, opts);
 
     if (erro) {
       res.status(erro.status).json({ error: erro.mensagem, detalhe: erro.detalhe });
@@ -392,13 +463,18 @@ module.exports = async function handler(req, res) {
 
     if (ehAudio) {
       const { transcricao, resposta: respostaTexto } = separarTranscricaoResposta(texto);
-      registrarUso(sessao.email, 'responder', transcricao || '(áudio sem transcrição reconhecida)').catch(() => {});
+      registrarUso(sessao.email, 'responder', (perfil ? '[' + perfil + '] ' : '') + (transcricao || '(áudio sem transcrição reconhecida)')).catch(() => {});
       res.status(200).json({ resposta: respostaTexto, transcricao });
       return;
     }
 
-    registrarUso(sessao.email, 'responder', objecao).catch(() => {});
-    salvarRespostaCache(tokensQuery, objecao, texto).catch(() => {});
+    if (ehConversa || ehOutra) {
+      registrarUso(sessao.email, 'responder', (ehConversa ? '[continuar] ' + mensagem : '[outra] ' + objecao)).catch(() => {});
+      res.status(200).json({ resposta: texto });
+      return;
+    }
+    registrarUso(sessao.email, 'responder', (perfil ? '[' + perfil + '] ' : '') + objecao).catch(() => {});
+    if (!perfil) salvarRespostaCache(tokensQuery, objecao, texto).catch(() => {});
     res.status(200).json({ resposta: texto });
   } catch (err) {
     res.status(500).json({ error: 'Falha ao conectar com o Gemini.', detalhe: String(err && err.message || err) });
