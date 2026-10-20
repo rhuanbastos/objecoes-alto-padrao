@@ -196,6 +196,31 @@
     </div>
 
     <div class="card">
+<style>
+.dia-bar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px;}
+.dia-bar input[type=date]{padding:9px 12px; border-radius:10px; border:1.5px solid var(--border); font-family:inherit; font-size:14px; color-scheme:dark;}
+.dia-chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+.dia-chip{padding:4px 11px; border-radius:999px; border:1px solid var(--border); background:transparent; color:var(--muted); font-family:inherit; font-size:12px; cursor:pointer;}
+.dia-chip.ativo{background:var(--orange); color:#050714; border-color:transparent; font-weight:700;}
+.dia-pessoa{border:1px solid var(--border); border-radius:12px; margin-bottom:10px; overflow:hidden;}
+.dia-pessoa summary{cursor:pointer; padding:12px 14px; display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; list-style:none;}
+.dia-pessoa summary::-webkit-details-marker{display:none;}
+.dia-pessoa .dp-nome{font-weight:700;}
+.dia-pessoa .dp-mail{color:var(--muted); font-size:12.5px;}
+.dia-pessoa .dp-cont{margin-left:auto; font-size:12.5px; color:var(--muted);}
+.dia-obj{margin:0; padding:4px 14px 12px; list-style:none;}
+.dia-obj li{display:flex; gap:12px; padding:7px 0; border-top:1px solid var(--border); font-size:13.5px;}
+.dia-obj .qd{flex:0 0 46px; color:var(--muted-2); font-variant-numeric:tabular-nums;}
+</style>
+<h2>Uso por dia</h2>
+<p class="rank-sub">Escolha um dia para ver quem usou a ferramenta, quantas vezes cada pessoa usou e as objeções que trouxe.</p>
+<div class="dia-bar"><input type="date" id="diaInput"><span class="rank-sub" id="diaResumo" style="margin:0;"></span></div>
+<div class="dia-chips" id="diaChips"></div>
+<div id="diaLista"></div>
+<div class="vazio" id="vazioDia" style="display:none;">Ninguém usou a ferramenta nesse dia.</div>
+</div>
+
+<div class="card">
       <h2>Uso por pessoa</h2>
       <div class="table-wrap">
         <table>
@@ -206,7 +231,8 @@
               <th class="num">Respostas geradas</th>
               <th class="num">Objeções adicionadas</th>
               <th class="num">Logins</th>
-              <th>Último acesso</th>
+              <th>Primeiro acesso</th>
+<th>Último acesso</th>
             </tr>
           </thead>
           <tbody id="tabelaUsuarios"></tbody>
@@ -392,7 +418,8 @@ function pintarResultados(dados){
       <td class="num">${escapeHtml(u.respostas || 0)}</td>
       <td class="num">${escapeHtml(u.objecoes_adicionadas || 0)}</td>
       <td class="num">${escapeHtml(u.logins || 0)}</td>
-      <td>${formatarData(u.ultimo_acesso)}</td>
+      <td>${formatarData(u.primeiro_acesso)}</td>
+<td>${formatarData(u.ultimo_acesso)}</td>
     </tr>
   `).join('');
   document.getElementById('vazioUsuarios').style.display = porUsuario.length ? 'none' : 'block';
@@ -408,9 +435,56 @@ function pintarResultados(dados){
   `).join('');
   document.getElementById('vazioRecentes').style.display = recentes.length ? 'none' : 'block';
 
-  cardSenha.style.display = 'none';
+  porUsuarioPorEmail = {}; (dados.porUsuario || []).forEach(u => { porUsuarioPorEmail[u.email] = u; });
+pintarDia(dados.dia);
+cardSenha.style.display = 'none';
   resultados.style.display = 'block';
 }
+
+let diaCarregando = false;
+function horaCurta(iso){
+const d = new Date(iso);
+if(isNaN(d.getTime())) return '—';
+return d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', timeZone:'America/Sao_Paulo' });
+}
+function dataBonita(yyyy){
+const [a,m,d] = String(yyyy).split('-');
+return d + '/' + m + '/' + a;
+}
+function pintarDia(dia){
+if(!dia) return;
+const input = document.getElementById('diaInput');
+input.value = dia.data;
+const pessoas = Array.isArray(dia.pessoas) ? dia.pessoas : [];
+const totalUsos = pessoas.reduce((s, p) => s + (Number(p.respostas) || 0), 0);
+document.getElementById('diaResumo').textContent = pessoas.length
+? pessoas.length + ' pessoa' + (pessoas.length === 1 ? '' : 's') + ' · ' + totalUsos + ' resposta' + (totalUsos === 1 ? '' : 's') + ' em ' + dataBonita(dia.data)
+: '';
+const chips = document.getElementById('diaChips');
+const dias = Array.isArray(dia.diasComUso) ? dia.diasComUso.slice(0, 14) : [];
+chips.innerHTML = dias.map(d => '<button type="button" class="dia-chip' + (d === dia.data ? ' ativo' : '') + '" data-d="' + escapeHtml(d) + '">' + escapeHtml(dataBonita(d).slice(0,5)) + '</button>').join('');
+chips.querySelectorAll('.dia-chip').forEach(b => b.addEventListener('click', () => carregarDia(b.dataset.d)));
+const lista = document.getElementById('diaLista');
+lista.innerHTML = pessoas.map(p => {
+const nomeBase = porUsuarioPorEmail[p.email];
+const nome = nomeBase ? nomeExibicao(nomeBase) : nomeDoEmail(p.email);
+const objs = (p.objecoes || []).map(o => '<li><span class="qd">' + escapeHtml(horaCurta(o.quando)) + '</span><span>' + escapeHtml(o.texto || '—') + '</span></li>').join('');
+return '<details class="dia-pessoa"><summary><span class="dp-nome">' + escapeHtml(nome) + '</span><span class="dp-mail">' + escapeHtml(p.email) + '</span><span class="dp-cont">' + (Number(p.respostas) || 0) + ' resposta' + (Number(p.respostas) === 1 ? '' : 's') + ' · ' + (Number(p.logins) || 0) + ' login' + (Number(p.logins) === 1 ? '' : 's') + ' · ' + escapeHtml(horaCurta(p.primeiro)) + '–' + escapeHtml(horaCurta(p.ultimo)) + '</span></summary>' + (objs ? '<ul class="dia-obj">' + objs + '</ul>' : '<ul class="dia-obj"><li><span>Nenhuma objeção registrada neste dia.</span></li></ul>') + '</details>';
+}).join('');
+document.getElementById('vazioDia').style.display = pessoas.length ? 'none' : 'block';
+}
+async function carregarDia(dia){
+if(diaCarregando) return;
+diaCarregando = true;
+try{
+const r = await fetch(USO_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ senha: senhaInput.value, dia }) });
+const dados = await r.json().catch(() => ({}));
+if(r.ok) pintarDia(dados.dia);
+} catch(err){ /* mantém o que já estava na tela */ }
+finally { diaCarregando = false; }
+}
+document.getElementById('diaInput').addEventListener('change', (e) => { if(e.target.value) carregarDia(e.target.value); });
+let porUsuarioPorEmail = {};
 
 formSenha.addEventListener('submit', async (e) => {
   e.preventDefault();
