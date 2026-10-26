@@ -426,8 +426,8 @@ module.exports = async function handler(req, res) {
   }
   // ~4MB em base64 já é um áudio de voz bem generoso (o WhatsApp comprime bastante);
   // acima disso é bem provável que seja um arquivo errado ou vídeo, não voz.
-  if (ehAudio && audioBase64.length > 5_600_000) {
-    res.status(400).json({ error: 'Áudio muito grande. Envie um áudio de voz mais curto (até ~2 minutos).' });
+  if (ehAudio && audioBase64.length > 4_400_000) {
+    res.status(400).json({ error: 'Áudio muito grande. Envie um áudio de até ~5 minutos (no máximo ~3 MB).' });
     return;
   }
 
@@ -462,7 +462,7 @@ module.exports = async function handler(req, res) {
     : [{ text: ehOutra ? montarPromptOutra(objecao, anteriores, perfil) : montarPrompt(objecao, perfil) }];
   const opts = ehConversa
     ? { contents: montarContentsConversa(objecao, historico, mensagem, perfil), temperature: 0.9, maxOutputTokens: 700 }
-    : ehOutra ? { temperature: 1.0 } : {};
+    : ehOutra ? { temperature: 1.0 } : ehAudio ? { maxOutputTokens: 4096 } : {};
 
   try {
     const { texto, erro } = await chamarGeminiComRetry(model, apiKey, parts, opts);
