@@ -120,7 +120,7 @@
   function decorar() {
     document.querySelectorAll("table").forEach(tb => {
       const cab = semAc(tb.querySelector("thead, tr")?.textContent || "");
-      const ehTabela = /objec|pergunt|detalhe|o que|acao/.test(cab) || [...tb.querySelectorAll("td")].some(td => /pediu resposta/i.test(td.textContent));
+      const ehTabela = /^\s*objec/.test(cab) || /detalhe/.test(cab); // s\u00f3 as tabelas de perguntas (n\u00e3o a de pessoas)
       if (!ehTabela) return;
       const head = tb.tHead?.rows?.[0];
       if (head && !head.querySelector(".px-td")) { const th = document.createElement("th"); th.className = "px-td"; head.appendChild(th); }
