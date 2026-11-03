@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Limpeza das objeções · Águia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap">
+<style>
+:root{--bg:#050714;--ink:#e2e8f0;--muted:#a9b4c8;--dim:#7d889e;--line:rgba(255,255,255,.10);--line2:rgba(255,255,255,.18);--cy:#a5f3fc;--grad:linear-gradient(90deg,#00f2ff,#5b8dff,#b07cf5);--font:"Poppins",system-ui,sans-serif;--mono:"Space Mono",monospace;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:15px/1.55 var(--font);background-image:radial-gradient(900px 520px at 12% -8%,rgba(0,242,255,.13),transparent 62%),radial-gradient(820px 620px at 100% 10%,rgba(157,78,221,.16),transparent 58%);background-attachment:fixed}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 48px}
+a{color:var(--cy)}
+.eyebrow{font:400 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--cy)}
+h1{margin:6px 0 4px;font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;color:#fff}
+.lead{margin:0 0 20px;color:var(--muted);max-width:70ch}
+.card{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));padding:18px}
+input[type=password],input[type=search]{background:rgba(5,7,20,.7);border:1px solid var(--line2);color:#fff;border-radius:12px;padding:10px 12px;font:500 14px var(--font)}
+.btn{border:0;border-radius:12px;padding:10px 16px;font:700 14px var(--font);color:#050714;background:var(--grad);cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.st{font-size:13.5px;color:var(--muted);margin:10px 0 0}
+.seg{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:12px;background:rgba(5,7,20,.5)}
+.seg button{border:0;background:transparent;color:var(--muted);font:600 13.5px var(--font);padding:8px 14px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:rgba(0,242,255,.14);color:#fff;box-shadow:inset 0 0 0 1px rgba(0,242,255,.5)}
+.cnt{display:inline-block;margin-left:6px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.1);font:700 11px var(--mono)}
+.chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.chk input,.it input{width:18px;height:18px;accent-color:#fda4af;flex:none}
+.barra{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:14px 0 10px}
+.lote{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line2);border-radius:12px;background:rgba(5,7,20,.92);backdrop-filter:blur(6px);margin-bottom:10px}
+.del{border:1px solid rgba(253,164,175,.6);background:rgba(244,63,94,.12);color:#fecdd3;border-radius:10px;padding:8px 14px;font:700 13px var(--font);cursor:pointer}
+.del.conf{background:rgba(244,63,94,.35);color:#fff}
+.del:disabled{opacity:.45;cursor:not-allowed}
+.it{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;background:rgba(5,7,20,.35);cursor:pointer}
+.it.imp{border-color:rgba(253,164,175,.6);background:rgba(244,63,94,.07)}
+.it .t{flex:1;min-width:0}
+.it .tx{font-size:14px;white-space:pre-wrap;word-break:break-word;color:#fff}
+.it .rs{font-size:13px;color:var(--muted);white-space:pre-wrap;word-break:break-word;max-height:6em;overflow:hidden;margin-top:4px}
+.it .meta{font-size:12px;color:var(--dim);margin-top:4px}
+.alerta{display:inline-block;margin-left:6px;color:#fecdd3;background:rgba(244,63,94,.18);border:1px solid rgba(253,164,175,.6);border-radius:999px;padding:0 8px;font:700 10.5px var(--mono);text-transform:uppercase}
+mark{background:rgba(244,63,94,.35);color:#fff;border-radius:3px;padding:0 2px}
+.vaz{color:var(--dim);text-align:center;padding:24px}
+.mais{display:block;margin:12px auto 0;border:1px solid var(--line2);background:transparent;color:var(--ink);border-radius:12px;padding:9px 18px;font:600 13px var(--font);cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="eyebrow">Ferramenta interna · gestão</span>
+  <h1>Limpeza das objeções</h1>
+  <p class="lead">Revise o que os SDRs digitaram e o que foi salvo na base, e exclua palavrões, brincadeiras ou textos cortados. <a href="/painel.html">← Voltar ao painel de uso</a></p>
+
+  <div class="card" id="cxSenha">
+    <form class="row" id="fSenha"><input type="password" id="senha" placeholder="Senha de administrador (a mesma do painel)" autocomplete="current-password" style="flex:1;min-width:240px" required><button class="btn" type="submit">Abrir</button></form>
+    <p class="st" id="st"></p>
+  </div>
+
+  <div id="app" hidden>
+    <div class="barra">
+      <div class="seg" role="group" aria-label="O que revisar">
+        <button type="button" id="vHist" aria-pressed="true">Histórico de perguntas <span class="cnt" id="nHist"></span></button>
+        <button type="button" id="vBase" aria-pressed="false">Base compartilhada <span class="cnt" id="nBase"></span></button>
+      </div>
+      <label class="chk"><input type="checkbox" id="soImp"> Só com palavras impróprias <span class="cnt" id="nImp"></span></label>
+    </div>
+    <p class="st" id="explica" style="margin:0 0 10px"></p>
+    <input type="search" id="busca" placeholder="Buscar no texto (ex.: lula, falacia)" style="width:100%;margin-bottom:10px">
+    <div class="lote">
+      <label class="chk"><input type="checkbox" id="todos"> Selecionar todos os mostrados</label>
+      <button class="del" type="button" id="excluir" disabled>Excluir selecionados</button>
+    </div>
+    <div id="lista"></div>
+    <button class="mais" type="button" id="mais" hidden>Mostrar mais</button>
+    <p class="st" id="msg"></p>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const semAc=s=>String(s??"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const dth=v=>v?new Date(v).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
+const IMP=["porra","caralho","krl","crl","merda","bosta","puta","puto","putaria","pqp","foda","foder","fodase","fodasse","fudido","fdp","filho da puta","vsf","vtnc","tnc","cu","cuzao","buceta","xoxota","xota","rola","pau no cu","punheta","viado","veado","bicha","arrombado","arrombada","babaca","otario","otaria","idiota","imbecil","retardado","retardada","desgraca","desgracado","desgracada","vagabundo","vagabunda","piranha","vadia","corno","cacete","escroto","escrota","nojento","lixo","burro","burra","macaco","macaca","chupar","chupa","chupada","boquete","gostosa","gostoso","safada","safado","tesao","pinto","pica","peitos"];
+const reImp=new RegExp("(^|[^a-z0-9])("+IMP.map(w=>w.replace(/ /g,"\\s+")).join("|")+")(?=[^a-z0-9]|$)","g");
+function acha(t){ const n=semAc(t), o=new Set(); let m; reImp.lastIndex=0; while((m=reImp.exec(n))) o.add(m[2].replace(/\s+/g," ")); return [...o]; }
+function marca(t){ const s=String(t??""), n=semAc(s); let out="",pos=0,m; reImp.lastIndex=0;
+  while((m=reImp.exec(n))){ const a=m.index+m[1].length, b=a+m[2].length; out+=esc(s.slice(pos,a))+"<mark>"+esc(s.slice(a,b))+"</mark>"; pos=b; } return out+esc(s.slice(pos)); }
+const limpa=t=>String(t??"").replace(/^\[cache\]\s*/,"");
+const chave=t=>semAc(limpa(t)).replace(/[^a-z0-9\s]/g," ").replace(/\s+/g," ").trim();
+let SENHA="", HIST=[], BASE=[], GRUPOS=[], vista="hist", n=40, sel=new Set(), mostrados=[];
+
+async function api(corpo){ const r=await fetch("/api/limpar",{method:"POST",headers:{"content-type":"application/json"},credentials:"same-origin",body:JSON.stringify({...corpo,senha:SENHA})}); const d=await r.json().catch(()=>({})); if(!r.ok){ const e=new Error(d.error||r.status); e.status=r.status; throw e; } return d; }
+
+function agrupar(){ // junta o mesmo texto repetido (igual ao painel) para excluir de uma vez
+  const g=new Map(); HIST.forEach(h=>{ const k=chave(h.detalhe)||("#"+h.id); const o=g.get(k)||{k,texto:limpa(h.detalhe),ids:[],emails:new Set(),ultima:h.criado_em};
+    o.ids.push(h.id); o.emails.add(h.email); if(new Date(h.criado_em)>new Date(o.ultima)) o.ultima=h.criado_em; g.set(k,o); });
+  GRUPOS=[...g.values()].map(o=>({...o,imp:acha(o.texto)})).sort((a,b)=>new Date(b.ultima)-new Date(a.ultima));
+  BASE=BASE.map(b=>({...b,imp:acha([b.pergunta,b.resposta,b.categoria].join(" \n "))}));
+}
+function render(){
+  const t=semAc($("busca").value.trim()), so=$("soImp").checked;
+  $("nHist").textContent=GRUPOS.length; $("nBase").textContent=BASE.length;
+  $("nImp").textContent=(vista==="hist"?GRUPOS:BASE).filter(x=>x.imp.length).length;
+  $("vHist").setAttribute("aria-pressed",vista==="hist"); $("vBase").setAttribute("aria-pressed",vista==="base");
+  $("explica").textContent=vista==="hist"?"O que os SDRs digitaram para pedir resposta. Textos iguais aparecem juntos: excluir apaga todas as vezes.":"Objeções e respostas salvas na base. Todo o time vê estas respostas na ferramenta.";
+  let l=vista==="hist"?GRUPOS:BASE;
+  if(so) l=l.filter(x=>x.imp.length);
+  if(t) l=l.filter(x=>semAc(vista==="hist"?x.texto+" "+[...x.emails].join(" "):[x.pergunta,x.resposta,x.categoria].join(" ")).includes(t));
+  const vis=l.slice(0,n); mostrados=vis.map(x=>vista==="hist"?x.k:String(x.id));
+  $("lista").innerHTML=vis.map(x=>{ const id=vista==="hist"?x.k:String(x.id), al=x.imp.length?`<span class="alerta">⚠ ${esc(x.imp.join(", "))}</span>`:"";
+    return vista==="hist"
+      ? `<label class="it${x.imp.length?" imp":""}"><input type="checkbox" data-id="${esc(id)}"${sel.has(id)?" checked":""}><span class="t"><span class="tx">${marca(x.texto)}</span>${al}<span class="meta" style="display:block">${x.ids.length>1?x.ids.length+" vezes · ":""}${esc([...x.emails].join(", "))} · ${dth(x.ultima)}</span></span></label>`
+      : `<label class="it${x.imp.length?" imp":""}"><input type="checkbox" data-id="${esc(id)}"${sel.has(id)?" checked":""}><span class="t"><span class="tx"><b>${marca(x.pergunta)}</b></span>${al}<span class="rs" style="display:block">${marca(x.resposta)}</span><span class="meta" style="display:block">${esc(x.categoria)} · ${dth(x.criado_em)}</span></span></label>`;
+  }).join("")||`<p class="vaz">${so?"Nenhum texto com palavras impróprias.":t?"Nada encontrado.":"Nada por aqui."}</p>`;
+  $("mais").hidden=l.length<=n; lote();
+}
+function lote(){ const b=$("excluir"); b.disabled=!sel.size; if(!b.classList.contains("conf")) b.textContent=sel.size?`Excluir selecionados (${sel.size})`:"Excluir selecionados";
+  $("todos").checked=mostrados.length>0&&mostrados.every(i=>sel.has(i)); }
+async function carregar(){ const d=await api({acao:"listar"}); HIST=d.historico||[]; BASE=d.base||[]; agrupar(); render(); }
+
+$("fSenha").addEventListener("submit",async e=>{ e.preventDefault(); SENHA=$("senha").value; $("st").textContent="Abrindo…";
+  try{ await carregar(); $("cxSenha").hidden=true; $("app").hidden=false; }
+  catch(err){ SENHA=""; $("st").textContent=err.status===401&&/senha/i.test(err.message)?"Senha incorreta.":err.status===401?"Entre primeiro com sua conta Google na ferramenta e volte aqui.":"Não consegui abrir agora: "+err.message; } });
+$("vHist").onclick=()=>{ vista="hist"; n=40; sel.clear(); render(); }; $("vBase").onclick=()=>{ vista="base"; n=40; sel.clear(); render(); };
+$("soImp").onchange=()=>{ n=40; render(); }; $("busca").oninput=()=>{ n=40; render(); }; $("mais").onclick=()=>{ n+=60; render(); };
+$("lista").addEventListener("change",e=>{ const c=e.target.closest("[data-id]"); if(!c) return; c.checked?sel.add(c.dataset.id):sel.delete(c.dataset.id); lote(); });
+$("todos").onchange=e=>{ mostrados.forEach(i=>e.target.checked?sel.add(i):sel.delete(i)); render(); };
+$("excluir").onclick=async()=>{ const b=$("excluir");
+  const ids=vista==="hist"?GRUPOS.filter(g=>sel.has(g.k)).flatMap(g=>g.ids):[...sel].map(Number);
+  if(!b.classList.contains("conf")){ b.classList.add("conf"); b.textContent=`Confirmar: apagar ${ids.length} ${ids.length===1?"registro":"registros"}`; setTimeout(()=>{ if(b.classList.contains("conf")){ b.classList.remove("conf"); lote(); } },6000); return; }
+  b.classList.remove("conf"); b.disabled=true; b.textContent="Excluindo…"; let total=0;
+  try{ for(let i=0;i<ids.length;i+=500){ const d=await api({acao:"excluir",tipo:vista==="hist"?"historico":"base",ids:ids.slice(i,i+500)}); total+=d.excluidos||0; }
+    sel.clear(); $("msg").textContent=`${total} ${total===1?"registro excluído":"registros excluídos"}.`; await carregar(); }
+  catch(err){ $("msg").textContent="Não consegui excluir: "+err.message; lote(); } };
+fetch("/api/me",{credentials:"same-origin"}).then(r=>{ if(!r.ok) $("st").textContent="Entre primeiro com sua conta Google na ferramenta e volte aqui."; }).catch(()=>{});
+</script>
+</body>
+</html>
