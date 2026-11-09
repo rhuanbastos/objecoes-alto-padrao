@@ -135,5 +135,6 @@ $("excluir").onclick=async()=>{ const b=$("excluir");
   catch(err){ $("msg").textContent="Não consegui excluir: "+err.message; lote(); } };
 fetch("/api/me",{credentials:"same-origin"}).then(r=>{ if(!r.ok) $("st").textContent="Entre primeiro com sua conta Google na ferramenta e volte aqui."; }).catch(()=>{});
 </script>
+<script src="/logo-home.js" defer></script>
 </body>
 </html>
