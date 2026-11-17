@@ -3,7 +3,7 @@
 // index.html), confere se é um e-mail @aguiaconsultoriaimobiliaria.com de
 // verdade, e cria o cookie de sessão que libera o uso da ferramenta.
 
-const { verificarTokenGoogle, criarCookieSessao } = require('../lib/auth');
+const { verificarTokenGoogle, criarCookieSessao, ehAdmin } = require('../lib/auth');
 const { registrarUso } = require('../lib/db');
 
 module.exports = async function handler(req, res){
@@ -28,7 +28,7 @@ module.exports = async function handler(req, res){
     const cookie = criarCookieSessao(email, nome);
     res.setHeader('Set-Cookie', cookie);
     registrarUso(email, 'login', nome || '').catch(() => {});
-    res.status(200).json({ ok: true, email, nome });
+    res.status(200).json({ ok: true, email, nome, admin: ehAdmin({ email }) });
   } catch(err){
     const status = err && err.dominioInvalido ? 403 : 401;
     res.status(status).json({ error: err && err.message || 'Falha ao verificar login do Google.' });

@@ -8,7 +8,7 @@
 // Variáveis de ambiente (já configuradas na Vercel): DB_HOST, DB_USER, DB_PASS, DB_NAME, ADMIN_PASSWORD
 
 const { getPool, ensureTable, ensureUsoTable } = require('../lib/db');
-const { exigirSessao } = require('../lib/auth');
+const { exigirSessao, ehAdmin } = require('../lib/auth');
 
 module.exports = async function handler(req, res){
   res.setHeader('Cache-Control', 'no-store');
@@ -23,7 +23,7 @@ module.exports = async function handler(req, res){
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
   const senha = (body && typeof body.senha === 'string') ? body.senha : '';
-  if (senha !== process.env.ADMIN_PASSWORD) {
+  if (senha !== process.env.ADMIN_PASSWORD && !ehAdmin(sessao)) {
     await new Promise(r => setTimeout(r, 500));
     res.status(401).json({ error: 'Senha incorreta.' });
     return;

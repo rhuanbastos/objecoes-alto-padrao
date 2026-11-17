@@ -7,7 +7,7 @@
 //   ADMIN_PASSWORD -> senha simples que só a gestão conhece
 
 const { getPool, ensureTable } = require('../lib/db');
-const { exigirSessao } = require('../lib/auth');
+const { exigirSessao, ehAdmin } = require('../lib/auth');
 
 module.exports = async function handler(req, res){
   if (req.method !== 'POST') {
@@ -41,7 +41,7 @@ module.exports = async function handler(req, res){
     return;
   }
 
-  if (senha !== process.env.ADMIN_PASSWORD) {
+  if (senha !== process.env.ADMIN_PASSWORD && !ehAdmin(sessao)) {
     res.status(401).json({ error: 'Senha incorreta.' });
     return;
   }

@@ -10,7 +10,7 @@
 //   ADMIN_PASSWORD -> mesma senha usada pra excluir objeções
 
 const { getPool, ensureUsoTable } = require('../lib/db');
-const { exigirSessao } = require('../lib/auth');
+const { exigirSessao, ehAdmin } = require('../lib/auth');
 
 // Agrupa as objeções que caíram no fallback de IA (ou seja, a busca local
 // não achou nada forte na base) por texto normalizado, pra mostrar no painel
@@ -72,7 +72,7 @@ module.exports = async function handler(req, res){
   }
   const senha = (body && typeof body.senha === 'string') ? body.senha : '';
 
-  if (senha !== process.env.ADMIN_PASSWORD) {
+  if (senha !== process.env.ADMIN_PASSWORD && !ehAdmin(sessao)) {
     res.status(401).json({ error: 'Senha incorreta.' });
     return;
   }
