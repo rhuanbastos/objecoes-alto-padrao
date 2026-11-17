@@ -963,8 +963,9 @@ function wireDelete(container, item){
   const btn = container.querySelector('[data-delete]');
   if(!btn || !item.id) return;
   btn.addEventListener('click', async () => {
-    const senha = prompt('Senha de administrador pra excluir essa objeção da base:');
-    if(senha === null) return; // cancelou
+    let senha = '';
+    if(window.__aguiaAdmin){ if(!confirm('Excluir essa objeção da base? Não dá para desfazer.')) return; }
+    else { senha = prompt('Senha de administrador pra excluir essa objeção da base:'); if(senha === null) return; } // cancelou
     btn.disabled = true;
     const originalHtml = btn.innerHTML;
     btn.innerHTML = 'Excluindo...';
@@ -1695,6 +1696,7 @@ async function handleCredentialResponse(response){
       mostrarErroLogin(dados && dados.error || 'Não foi possível entrar. Tenta de novo.');
       return;
     }
+    window.__aguiaAdmin = !!dados.admin;
     await carregarTudoELiberar(dados.email, dados.nome);
   } catch(err){
     mostrarErroLogin('Falha ao conectar. Tenta de novo em instantes.');
@@ -1774,6 +1776,7 @@ function animarEntradaHero(){
     const rMe = await fetch(ME_ENDPOINT);
     if(rMe.ok){
       const dadosMe = await rMe.json();
+      window.__aguiaAdmin = !!dadosMe.admin;
       await carregarTudoELiberar(dadosMe.email, dadosMe.nome);
       return;
     }

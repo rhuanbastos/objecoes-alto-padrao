@@ -133,7 +133,8 @@ $("excluir").onclick=async()=>{ const b=$("excluir");
   try{ for(let i=0;i<ids.length;i+=500){ const d=await api({acao:"excluir",tipo:vista==="hist"?"historico":"base",ids:ids.slice(i,i+500)}); total+=d.excluidos||0; }
     sel.clear(); $("msg").textContent=`${total} ${total===1?"registro excluído":"registros excluídos"}.`; await carregar(); }
   catch(err){ $("msg").textContent="Não consegui excluir: "+err.message; lote(); } };
-fetch("/api/me",{credentials:"same-origin"}).then(r=>{ if(!r.ok) $("st").textContent="Entre primeiro com sua conta Google na ferramenta e volte aqui."; }).catch(()=>{});
+fetch("/api/me",{credentials:"same-origin"}).then(async r=>{ if(!r.ok){ $("st").textContent="Entre primeiro com sua conta Google na ferramenta e volte aqui."; return; }
+  const eu=await r.json().catch(()=>({})); if(eu.admin){ try{ await carregar(); $("cxSenha").hidden=true; $("app").hidden=false; }catch(e){} } }).catch(()=>{});
 </script>
 <script src="/logo-home.js" defer></script>
 </body>

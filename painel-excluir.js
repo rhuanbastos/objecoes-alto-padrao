@@ -93,7 +93,6 @@
       menu.append(i, ok); i.focus();
     };
     const confirmar = async () => {
-      if (!senhaDoPainel()) return pedirSenha(confirmar);
       menu.innerHTML = '<div class="px-info">Procurando o registro\u2026</div>';
       let ids;
       try { ids = await idsDaLinha(tr); }

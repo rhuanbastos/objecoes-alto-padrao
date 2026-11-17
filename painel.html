@@ -521,6 +521,11 @@ formSenha.addEventListener('submit', async (e) => {
       msgAcesso.innerHTML = 'Você precisa entrar na <a href="index.html">ferramenta principal</a> primeiro com seu e-mail @aguiaconsultoriaimobiliaria.com.';
       return;
     }
+    const eu = await r.json().catch(() => ({}));
+    if(eu.admin){
+      const u = await fetch(USO_ENDPOINT, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify({ senha: '' }) });
+      if(u.ok){ msgAcesso.textContent = ''; pintarResultados(await u.json()); return; }
+    }
     msgAcesso.textContent = 'Digite a senha de administrador pra ver as estatísticas de uso da equipe.';
     formSenha.style.display = 'flex';
     senhaInput.focus();
